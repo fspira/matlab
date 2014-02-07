@@ -129,9 +129,11 @@ for lauf= 1:25
             chromatin1{lauf} = first_css.WeightedCentroid;
          
             chromatin2{lauf} = second_css.WeightedCentroid;
+            
+            
 
 
-                          print(h,'-dpdf', [num2str(lauf),'_SplitChromatin.pdf']);  
+                          print(h,'-dpdf', [num2str(lauf),'_Chromatin.pdf']);  
 
                     close all
 
