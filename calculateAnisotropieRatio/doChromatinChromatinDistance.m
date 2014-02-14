@@ -1,4 +1,4 @@
-function [angle] = doChromatinChromatinDistance(imgMid,)
+function [cChromatin1 rChromatin1 cChromatin2 rChromatin2] = doChromatinChromatinDistance(imgMid)
 
             
    %MIJ.setRoi( [ cChromatin1(lauf); rChromatin1(lauf)], ij.gui.Roi.POINT);
@@ -16,7 +16,7 @@ function [angle] = doChromatinChromatinDistance(imgMid,)
     %            rChromatin2(lauf) = coords(2);
 
     %            MIJ.run('closeAllWindows');
-imgMid = greenStack;
+%imgMid = greenStack;
 [mm nn pp] = size(imgMid)
 AxisDiam = 1;
 
@@ -27,16 +27,18 @@ AxisDiam = 1;
   chromatin1 ={};
   chromatin2 = {};
   
-for lauf= 1:25
+for lauf= 1:pp
     
    % imshow(imgMid(:,:,lauf),[])
     %hold on
     %plot(center(1),center(2),'x')
    
      
-    G1 = fspecial('gaussian',[15 15],2);
+    G1 = fspecial('gaussian',[25 25],15);
     imgFilter = imfilter(imgMid(:,:,lauf),G1,'same');
     BW2 = edge(imgFilter,'canny',0.7,10);
+    BW2 = bwmorph(BW2,'bridge',8);
+    imshow(BW2)
     
     ccc = regionprops(BW2,'all');
     [structLength, tmp] = size(ccc)
@@ -44,10 +46,31 @@ for lauf= 1:25
   
     imshow(BW2)
     
+    
+    %%%%% This section was implemented to correctly segment early
+    %%%%% anaphases. Chromatin may be connected but 95% percent of the mass
+    %%%%% is separated. A Big smoothing will identify a single object,
+    %%%%% which can be correctly split.
+    
+    if axisRatio < 1.2 && structLength > 1
+            
+            imshow(imgFilter,[])
+            G = fspecial('gaussian',[80 80],25);
+            imgFilter = imfilter(imgMid(:,:,lauf),G,'same');
+            BW2 = edge(imgFilter,'canny',0.4,10);
+            ccc = regionprops(BW2,'all');
+            structLength = length(ccc);
+    end
+    
+    %%%%% This section splits a single object into two. A large gaussian is
+    %%%%% applied to smooth out the objects. Decision is made upon the axis
+    %%%%% ratio (not elongated any more and the number of identified
+    %%%%% objects.
+    
     if axisRatio < 1.6 && structLength == 1
   
             imshow(imgFilter,[])
-            G = fspecial('gaussian',[70 70],15);
+            G = fspecial('gaussian',[80 80],25);
             imgFilter = imfilter(imgMid(:,:,lauf),G,'same');
             BW2 = edge(imgFilter,'canny',0.4,10);
             ccc = regionprops(BW2,'all');
@@ -123,9 +146,9 @@ for lauf= 1:25
                     h= figure(1)
                     imshow(imgMid(:,:,lauf),[])
                     hold on
-                    plot(first_css.WeightedCentroid(1),first_css.WeightedCentroid(2),'xb')
-                     plot(second_css.WeightedCentroid(1),second_css.WeightedCentroid(2),'xb') 
-                            
+                    plot(first_css.WeightedCentroid(1),first_css.WeightedCentroid(2),'xr')
+                    plot(second_css.WeightedCentroid(1),second_css.WeightedCentroid(2),'xb') 
+            
             chromatin1{lauf} = first_css.WeightedCentroid;
          
             chromatin2{lauf} = second_css.WeightedCentroid;
@@ -147,7 +170,8 @@ for lauf= 1:25
                          flipMarker = 0
                          
     else
-        
+        %%%%% Orientation of the chromatin is identified and stored.
+        %%%%% Orientations are grouped to horizontal and vertical.
         
                     if abs(ccc(1).Orientation) > 40 
 
@@ -192,6 +216,8 @@ for lauf= 1:25
                     %%%%% split chromatin along the long axis of the ellipse
 
                   BW2 = bwmorph(BW2,'bridge',8);
+                  
+                  
                   s = regionprops(BW2, imgMid(:,:,lauf), {'WeightedCentroid'});
    
 if structLength == 1
@@ -212,10 +238,10 @@ if structLength == 1
             chromatin2{lauf} = s(1).WeightedCentroid;
 else
     
-    h= figure(1)
+             h= figure(1)
                     imshow(imgMid(:,:,lauf),[])
                     hold on
-                    plot(s(1).WeightedCentroid(1),s(1).WeightedCentroid(2),'xb')
+                    plot(s(1).WeightedCentroid(1),s(1).WeightedCentroid(2),'xr')
                     plot(s(2).WeightedCentroid(1),s(2).WeightedCentroid(2),'xb')
                    
                        %pause(0.5) 
@@ -249,30 +275,12 @@ end
    
     
 
-   
-   % BW2(:,:) = 0;
-   
-   % BW2(ccc(1).PixelIdxList) = 255;
-  %  imshow(BW2)
-   
     
     %%%%% Compute the weighted center of mass and connect uncontected
     %%%%% pixels before computing the center of mass
   
-    
-    %%%%%%%%%%%%%%%
-    %%%%% This section tests whether a metaphase plate or divided
-    %%%%% chromatin was identified.
-
-    dividedChromatin = length(s);
-    
-    if dividedChromatin > 1
-         
-            chromatin1 = s(1).WeightedCentroid;
-         
-            chromatin2 = s(2).WeightedCentroid;
-    
-    
+   
+   
    
   %  imshow(BW4)
   %  hold on
@@ -284,89 +292,39 @@ end
      
    % close all
     
+           for subrun = 1:length(chromatin1)
 
-   % Calculate the angle between the points and convert it from rad to the
-   % degree system
-   
-    dx = chromatin2(1) - chromatin1(1);
-    dy = chromatin2(2) - chromatin1(2);
-    
-    angle = (abs(atan2(dy,dx)))*180/pi
-    
-    
-                   
-    
-    BW_test = BW2;
-    BW_test(:,:) = 0;
-   imshow(BW_test)
-hold on
+           % Calculate the angle between the points and convert it from rad to the
+           % degree system
 
-                   
-         dist2 = pdist2([ chromatin1(1),chromatin1(2)],[ chromatin2(1), chromatin2(2)]);
-                   
-         %distChrom = dist2*voxelX_mumMid;
-  
-         h=figure(1)  
-         imshow(imgMid(:,:,lauf),[])
-         hold on
-    
-             plot(chromatin1(1),chromatin1(2),'xb')
-             plot(chromatin2(1),chromatin2(2),'xb')
-                 for subrun = 1:2
-       
-                   shapeTmp = ccc(subrun).PixelList ;
-                   shapeX = shapeTmp(:,1);
-                   shapeY = shapeTmp(:,2);
-    
-                    plot(shapeX, shapeY,'xr') 
-                 end
- 
-        cChromatin1(lauf) = chromatin1(1);
-        rChromatin1(lauf) = chromatin1(2);
-        
-        cChromatin2(lauf) = chromatin2(1);
-        rChromatin2(lauf) = chromatin2(2);
-     
-            print(h,'-dpdf', [num2str(lauf),'_Chromatin.pdf']);%tifCurvetifFilename);
-             close all
-    
-    else
-    
-        
-        chromatin1 = s(1).WeightedCentroid;
-        %%%%% since there is only a single center of mass, coordinates are
-        %%%%% stored for 1 and 2
-        
-        cChromatin1(lauf) = chromatin1(1);
-        rChromatin1(lauf) = chromatin1(2);
-        
-        cChromatin2(lauf) = chromatin1(1);
-        rChromatin2(lauf) = chromatin1(2);
-                   
-        dist2 =0;
-      
-                  angle = 0; 
-      
-      %   distChrom = dist2*voxelX_mumMid;
-  
-         h=figure(1)  
-         imshow(imgMid(:,:,lauf),[])
-         hold on
-    
-            plot(chromatin1(1),chromatin1(2),'xb')
-   
-          subrun = 1
-          shapeTmp = ccc(1).PixelList ;
-          shapeX = shapeTmp(:,1);
-          shapeY = shapeTmp(:,2);
-    
-         plot(shapeX, shapeY,'xr') 
-     
-     
-          print(h,'-dpdf', [num2str(lauf),'_Chromatin.pdf']);%tifCurvetifFilename);
-         close all
+             % dx = chromatin2(1) - chromatin1(1);
+             % dy = chromatin2(2) - chromatin1(2);
+
+             % angle = (abs(atan2(dy,dx)))*180/pi
+
+
+
+
+              % BW_test = BW2;
+             %  BW_test(:,:) = 0;
+          %    imshow(BW_test)
+                %hold on
+
+
+                % dist2 = pdist2([ chromatin1(1),chromatin1(2)],[ chromatin2(1), chromatin2(2)]);
+
+                 %distChrom = dist2*voxelX_mumMid;
+
+                chromatinTmp = chromatin1{subrun}
+                cChromatin1(subrun) = chromatinTmp(:,1);
+                
+                rChromatin1(subrun) = chromatinTmp(:,2);
+
+                chromatinTmp = chromatin2{subrun}
+                cChromatin2(subrun) = chromatinTmp(:,1);
+                
+                rChromatin2(subrun) = chromatinTmp(:,2);
+           end
     end
-     end
-end
 
     

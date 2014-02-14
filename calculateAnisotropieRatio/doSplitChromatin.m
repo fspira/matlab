@@ -37,7 +37,11 @@ xbar = ccc(k).Centroid(1);
     %G = fspecial('gaussian',[5 5],2);
   
     %imgFilter = imfilter(tmp1,G,'same');
-
+    
+    
+    %%%%% Connect disconnected pixel
+    tmp1 = bwmorph(tmp1,'bridge',8);
+    
    
     %%%%%% identify individual objects within the image
     [B L N A] = bwboundaries(tmp1,8);
@@ -82,3 +86,5 @@ xbar = ccc(k).Centroid(1);
     
     B_FirstBoundary = B{B_FirstBoundaryIndex};
     B_SecondBoundary = B{B_SecondBoundaryIndex};
+    
+   

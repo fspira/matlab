@@ -1,4 +1,6 @@
 function  [D, dNegInv, dSum] = doVisualizeSPComponents(D,tifFilename)
+%%%%%% This function sorts the values into a colormaprange from 0 to 255.
+%%%%%% Negative values will range form 0 - 127, pos values from 128-255
 
 [m n p] = size(D)
 for lauf = 1:p

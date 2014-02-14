@@ -23,8 +23,8 @@ function [first_css second_css] = doCalculateCenter(B_FirstBoundary,B_SecondBoun
     
     imshow(secondBoundary)
     
-    firstCenterImg = firstBoundary .* img;
-    secondCenterImg = secondBoundary .* img;
+    firstCenterImg = uint16(firstBoundary) .* uint16(img);
+    secondCenterImg = uint16(secondBoundary) .* uint16(img);
     
     first_css = regionprops(BW_first, firstCenterImg, {'WeightedCentroid'});
     second_css = regionprops(BW_second, secondCenterImg, {'WeightedCentroid'});
