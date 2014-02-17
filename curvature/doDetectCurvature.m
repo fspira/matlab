@@ -93,6 +93,7 @@ yCat = yCat(catZero,:);
 %%%% greate than 125 are intersecting pixels.
 %%%% Calculate flank 1
 tmp(:,:) = 0;
+tmp = double(tmp);
 tmp1 = tmp;
 tmp1(:,:) = 0;
 knots = [];
@@ -105,7 +106,7 @@ knots = [];
 %y = knots(2, :);
 %areaOfPolygon = polyarea(x,y);
 finerSpacing = 1:0.01:splineEnd;
-originalSpacing = 1:splineEnd;
+originalSpacing = 1:length(knots);
 
 splineXY = spline(originalSpacing, knots, finerSpacing);
 
@@ -136,7 +137,7 @@ for subrun = 1:length(X1)
     tmpSpline(Y1(subrun),X1(subrun)) = 125;
 
 end
-imshow(tmpSpline)
+imshow(tmpSpline,[])
 
 tmp= tmpSpline;
 
@@ -171,23 +172,27 @@ for subrun  = 1:length(B(:,1))
 end
 
 clear B
+     
+%%%%% this section plots xy coordinates marking ingressing furrow into the
+%%%%% image and determines the intersection spline coordinates
 
-for subrun = 1:length(yCat)
+     close all
+     imshow(tmp)
+     hold on
+     plot(xp(1),yp(1),'xr')
+     plot( xp(2),yp(2),'xr')
+     hLine = imline(gca,[xp(1),xp(2)], [yp(1),yp(2)]); 
+     tmp1 = hLine.createMask();
+     close all
 
-    tmp1((round(yCat(subrun,1))),round(yCat(subrun,2))) = 125;
-    
-end
-
-
-
-tmp1 = bwmorph(tmp1,'bridge',8);
+     
 tmp1 = im2bw(tmp1);
 tmp1 = tmp1.*125;
 
 tmp2 = tmp + tmp1;
 imshow(tmp2)
 
-[rIntersect1,cIntersect1] = find(tmp2 > 130);
+[rIntersect1,cIntersect1] = find(tmp2 > 130)
 
 flag = isempty(rIntersect1)
 
@@ -230,7 +235,8 @@ tmp(:,:) = 0;
 %y = knots(2, :);
 %areaOfPolygon = polyarea(x,y);
 finerSpacing = 1:0.01:splineEnd;
-originalSpacing = 1:splineEnd;
+originalSpacing = 1:length(knots);
+
 
 splineXY = spline(originalSpacing, knots, finerSpacing);
 %plot(knots(1, :), knots(2, :), 'ro',...
@@ -300,13 +306,26 @@ clear B
 
 
 imshow(tmp,[])
+      
+     close all
+     imshow(tmp)
+     hold on
+     plot(xp(1),yp(1),'xr')
+     plot( xp(2),yp(2),'xr')
+     hLine = imline(gca,[xp(1),xp(2)], [yp(1),yp(2)]); 
+     tmp1 = hLine.createMask();
+     
+     %tmp1 = uint8(tmp1) + uint8( binaryImage1);
+
+     
+    tmp1 = im2bw(tmp1);
+    tmp1 = tmp1.*125;
+
+    tmp2 = tmp + tmp1;
+    imshow(tmp2)
 
 
-
-tmp2 = tmp + tmp1;
-imshow(tmp2)
-
-[rIntersect2,cIntersect2] = find(tmp2 > 135);
+[rIntersect2,cIntersect2] = find(tmp2 > 135)
 
 flag = isempty(rIntersect2)
 
