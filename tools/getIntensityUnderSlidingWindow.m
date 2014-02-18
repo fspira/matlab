@@ -1,6 +1,6 @@
 function  slidingWindowIntensities = getIntensityUnderSlidingWindow(redLinescan,sWSet,furrowCenter)
 
-yRed1 = redLinescan{1};
+yRed1 = redLinescan;
 %sWSet = 4
 redMax = furrowCenter
 
@@ -14,7 +14,7 @@ sW2 = sW;
 
 lauf = 1;
 
-    redValuesSliding_1tmp = redLinescan{1};
+    redValuesSliding_1tmp = redLinescan;
     
         %%%%% This section ensures that the sliding windows fits the
         %%%%% selection. If not the selection is cropped to fit the window

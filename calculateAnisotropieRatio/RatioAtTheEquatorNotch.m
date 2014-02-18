@@ -229,14 +229,52 @@ cd(curdir)
           [furrowCenter1,furrowCenter2, curveCenter1, curveCenter2]= doDetectCenterOfRoi(redNorm ,splineFitOutline,Furrow1,Furrow2,Curve1,Curve2)
           [S1Linescan, S2Linescan] = doGetLinescan(S1Norm, S2Norm,splineFitOutline);
           
+          S1Linescan = S1Linescan{1};
+          S2Linescan = S2Linescan{2};
+          
         %%%% set sliding window size in micron
 windowSize = 4; %%% in microns
 
 sWSet = round(windowSize / voxelX_mum);  
 
- slidingWindowIntensities = getIntensityUnderSlidingWindow(redLinescan,sWSet,furrowCenter1)
+  furrow1Sliding_S1 = getIntensityUnderSlidingWindow(S1Linescan,sWSet,furrowCenter1)
+  furrow1Sliding_S2 = getIntensityUnderSlidingWindow(S2Linescan,sWSet,furrowCenter1)
+  furrow2Sliding_S1 = getIntensityUnderSlidingWindow(S1Linescan,sWSet,furrowCenter2)
+  furrow2Sliding_S2 = getIntensityUnderSlidingWindow(S2Linescan,sWSet,furrowCenter2)
        
-      % connectedPoints = doConnectTwoPoints(xp,yp,imgOut)
+  
+  curve1Sliding_S1 = getIntensityUnderSlidingWindow(S1Linescan,sWSet,curveCenter1)
+  curve1Sliding_S2 = getIntensityUnderSlidingWindow(S2Linescan,sWSet,curveCenter1)
+  curve2Sliding_S1 = getIntensityUnderSlidingWindow(S1Linescan,sWSet,curveCenter2)
+  curve2Sliding_S2 = getIntensityUnderSlidingWindow(S2Linescan,sWSet,curveCenter2)
+  
+  
+  
+  ratioScanS1S2 = S1Linescan ./ S2Linescan;
+  
+  ratioSliding_Furrow1 = getIntensityUnderSlidingWindow(ratioScanS1S2,sWSet,furrowCenter1)
+  ratioSliding_Furrow2 = getIntensityUnderSlidingWindow(ratioScanS1S2,sWSet,furrowCenter1)
+  
+  plot(1:length(ratioSliding_Furrow1), ratioSliding_Furrow1,'-')
+  yL = get(gca,'YLim');
+  hold on
+  line([furrowCenter1 furrowCenter1],yL,'Color','r');
+  line([furrowCenter2 furrowCenter2],yL,'Color','b');
+  line([curveCenter1 curveCenter1],yL,'Color','g');
+  line([curveCenter2 curveCenter2],yL,'Color','g');
+
+    
+    
+  plot(1:length( ratioScanS1S2),  ratioScanS1S2,'-')
+  yL = get(gca,'YLim');
+  hold on
+  line([furrowCenter1 furrowCenter1],yL,'Color','r');
+  line([furrowCenter2 furrowCenter2],yL,'Color','b');
+  line([curveCenter1 curveCenter1],yL,'Color','g');
+  line([curveCenter2 curveCenter2],yL,'Color','g');
+  
+  
+  % connectedPoints = doConnectTwoPoints(xp,yp,imgOut)
     %   yCat = doInterpolateLineThroughPoints(xp, yp, imgOut)
        
     %   tmp1 = imgOut; tmp1(:,:)=0; %tmp1 = im2bw(tmp1);
