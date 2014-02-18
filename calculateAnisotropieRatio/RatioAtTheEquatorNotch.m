@@ -63,8 +63,8 @@ clear imgMidtmpTmp
 
 
 imgOrig = tiffread30(char(tifFilename))
-%voxelX = getfield(imgOrig,'lsm','VoxelSizeX');
-%voxelX_mum = voxelX*1000000;
+voxelX = getfield(imgOrig,'lsm','VoxelSizeX');
+voxelX_mum = voxelX*1000000;
 
 
  truncName = findstr(tifFilename,'.lsm');
@@ -138,4 +138,127 @@ for lauf = 1:p
   
     
 end
+
+
+segmentOut = doSegmentImage(S1);
+
+   
+  cc = regionprops(segmentOut,'all');
+  B = bwboundaries(segmentOut,8); 
+ B  = B{1};
+
+
+%%%%% manually confirm segmentation
+
+
+Miji;
+
+cd(curdir)
+
+
+                MIJ.createImage(imgMerge(:,:,:,lauf));
+                MIJ.run('8-bit');
+              
+               MIJ.run('Stack to RGB');
+               % MIJ.selectWindow('Import from Matlab');
+              MIJ.setRoi( [B(:,2)';B(:,1)'], ij.gui.Roi.POLYLINE);
+      %MIJ.setRoi( [ selectedRoi(:,2)'; selectedRoi(:,1)'], ij.gui.Roi.POLYLINE);
+    k = waitforbuttonpress 
+    MIJ.run('saveMacro');
+    sROI= ReadImageJROI('Roi.zip');
+    tmp = sROI{:,:}.mnCoordinates;
+    cSegment{lauf} = tmp(:,1);
+    rSegment{lauf} = tmp(:,2);
+    
+    segmentedOutline = [cSegment{1}, rSegment{1}];
+    
+    BW1 = S2;
+    BW1(:,:) = 0;
+    
+   for subrun = 1:length(rSegment{lauf}) 
+
+    BW1(segmentedOutline(subrun,2), segmentedOutline(subrun,1)) = 255;
+    
+   end
+   
+   
+   
+   imshow(BW1)
+   
+   [splineFitOutline, imgOut ]= doASplineFit(segmentedOutline,S1);
+
+   ccc = regionprops(imgOut,'Orientation','MajorAxisLength','MinorAxisLength','Centroid');
+
+   k=1
+   orientHor(1) = 90;
+   orientHor(2) = -90;
+   orientVer(1) = 0;
+   orientVer(2) = 180;
+   
+   cellOrientation = sqrt(ccc.Orientation^2)
+   
+       if cellOrientation > 45
+
+           for subrun = 1:2
+                
+               [xp(subrun) yp(subrun)] = doSelectEllipsePoint(ccc, orientHor(subrun) ,k)    
+                
+           end
+           
+       else
+           
+           for subrun = 1:2
+                
+                [xp(subrun) yp(subrun)] = doSelectEllipsePoint(ccc, orientVer(subrun) ,k)    
+                
+           end
+           
+       end
+       
+       
+       %%%%%%% doDrawCenterOfFurrow
+       
+         
+
+       [Furrow1 Furrow2 Curve1 Curve2]= doPickFurrowSecondCurve(imgMerge)
+               
+          dist1 = pdist2([Furrow1(1),Furrow1(1)],[Furrow2(1),Furrow2(2)]);
+                   
+         furrowDiameter = dist1*voxelX_mum;
+       
+          [furrowCenter1,furrowCenter2, curveCenter1, curveCenter2]= doDetectCenterOfRoi(redNorm ,splineFitOutline,Furrow1,Furrow2,Curve1,Curve2)
+          [S1Linescan, S2Linescan] = doGetLinescan(S1Norm, S2Norm,splineFitOutline);
+          
+        %%%% set sliding window size in micron
+windowSize = 4; %%% in microns
+
+sWSet = round(windowSize / voxelX_mum);  
+
+ slidingWindowIntensities = getIntensityUnderSlidingWindow(redLinescan,sWSet,furrowCenter1)
+       
+      % connectedPoints = doConnectTwoPoints(xp,yp,imgOut)
+    %   yCat = doInterpolateLineThroughPoints(xp, yp, imgOut)
+       
+    %   tmp1 = imgOut; tmp1(:,:)=0; %tmp1 = im2bw(tmp1);
+       
+    %   for subrun = length(yCat)
+          
+    %      tmp1((round(yCat(subrun,1))),round(yCat(subrun,2))) = 125;
+            
+           
+    %   end
+           
+          %  tmp1 = bwmorph(tmp1,'bridge',8);
+          %  tmp1 = im2bw(tmp1);
+          %  tmp1 = tmp1.*125;
+         
+   
+    
+
+    %tmp2 = tmp + tmp1;
+    %imshow(tmp2)
+
+
+%[rIntersect2,cIntersect2] = find(tmp2 > 135)
+           
 
