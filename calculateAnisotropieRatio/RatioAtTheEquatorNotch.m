@@ -46,14 +46,14 @@ tifFilenameMid = 'cell12_mid.lsm';
 
 zSectionToAnalyze = 19% notch casette image
 zSectionMidStack = 1; % conventional image
-
+analysisFrame = zSectionToAnalyze;
 %%%%% Load midSection
 
 imgMid = imread(char(tifFilenameMid));
 imgMidtmp = tiffread30(char(tifFilenameMid));
 
 imgMidtmpTmp = cat(3,imgMidtmp.data);
-imgMid = imgMidtmpTmp;
+%imgMid = imgMidtmpTmp;
 imgMidtmpTmp = imgMidtmpTmp(:,:,zSectionMidStack);
 
 voxelX = getfield(imgMidtmp,'lsm','VoxelSizeX');
@@ -357,6 +357,67 @@ CurvatureStore{3} = Curvature;
 CurvatureStore{4} = Curvature;
 
 
+[distChrom distContractileRing orientation] = doAngleDistances_v1(imgMid,voxelX_mumMid,tifFilename);
+
+stagingParameters = double([distChrom distContractileRing]);
+
+[density flagOut predicted_time] = doMapTime(stagingParameters);
+
+flagOut = double(flagOut)
+
+
 
   
   
+cd(curdir)
+
+curvTmp1 = CurvatureStore{1};
+curvTmp2 = CurvatureStore{2};
+
+meanCurvatureFurrow = (curvTmp1(3) + curvTmp2(3))/2
+
+
+curvTmp1 = CurvatureStore{3};
+curvTmp2 = CurvatureStore{4};
+
+meanCurvatureNonFurrow = (curvTmp1(3) + curvTmp2(3))/2
+
+meanRatioFurrow  = (ratioScan_1_S1S2 + ratioScan_2_S1S2)/2
+meanRatioNonFurrow = (ratioCurve_2__S1S2 + ratioCurve_2__S1S2)/2
+
+              saveVariables = {};
+
+            saveVariables{1} =  distChrom;
+            saveVariables{2} =  distContractileRing;
+            
+            
+            saveVariables{3} =  orientation;
+            saveVariables{4} = analysisFrame;
+            saveVariables{5} = meanRatioFurrow;
+            saveVariables{6} = CurvatureStore{1};
+            
+            saveVariables{7} = meanRatioNonFurrow;
+            saveVariables{8} = meanCurvatureNonFurrow;
+            
+            saveVariables{9} = predicted_time;
+            saveVariables{10} = flagOut;
+            
+            
+            
+            
+            clear csvData;
+            csvData=saveVariables;
+    
+            header= ['chromatin distance, contractile ring distance, orientation, analysis frame, ',...
+                'ratioFurrow, curvatureFurrow, ratioNonFurrow, curvatureNonFurrow, ',...
+                'predicted_time, probability'];
+            
+            outid = fopen([tifFilename,'RatioAnalysis.csv'], 'w+');
+
+            fprintf(outid, '%s', header);
+            fclose(outid);
+            dlmwrite ([tifFilename,'RatioAnalysis.csv'],csvData,'roffset',1,'-append')
+
+close all
+
+
