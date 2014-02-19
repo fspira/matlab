@@ -28,6 +28,14 @@ addpath('/Users/spira/Documents/Matlab_scripte/tiffIO')
 addpath('/Users/spira/Documents/Matlab_scripte/')
 addpath('/Users/spira/Desktop/Desktop/LifeactCherry_GlGPIEgfp/131204')
 addpath('/Users/spira/Documents/MATLAB_scripte/ImageProcessing/Utilities')
+addpath('/Users/spira/Desktop/programme/calculateAnisotropieRatio')
+addpath('/Users/spira/Desktop/programme/centerOfMass')
+addpath('/Users/spira/Desktop/programme/curvature')
+addpath('/Users/spira/Desktop/programme/determineAngle')
+addpath('/Users/spira/Desktop/programme/staging')
+addpath('/Users/spira/Desktop/programme/tools')
+
+
 curdir = pwd;
 
 %load('voxelX_mum.mat');
@@ -169,7 +177,7 @@ cd(curdir)
     tmp = sROI{:,:}.mnCoordinates;
     cSegment{lauf} = tmp(:,1);
     rSegment{lauf} = tmp(:,2);
-    
+    MIJ.run('closeAllWindows');
     segmentedOutline = [cSegment{1}, rSegment{1}];
     
     BW1 = S2;
@@ -227,13 +235,14 @@ cd(curdir)
          furrowDiameter = dist1*voxelX_mum;
        
           [furrowCenter1,furrowCenter2, curveCenter1, curveCenter2]= doDetectCenterOfRoi(redNorm ,splineFitOutline,Furrow1,Furrow2,Curve1,Curve2)
+          doCutSpline
           [S1Linescan, S2Linescan] = doGetLinescan(S1Norm, S2Norm,splineFitOutline);
           
           S1Linescan = S1Linescan{1};
-          S2Linescan = S2Linescan{2};
+          S2Linescan = S2Linescan{1};
           
         %%%% set sliding window size in micron
-windowSize = 4; %%% in microns
+windowSize = 2; %%% in microns
 
 sWSet = round(windowSize / voxelX_mum);  
 
@@ -250,53 +259,104 @@ sWSet = round(windowSize / voxelX_mum);
   
   
   
-  ratioScanS1S2 = S1Linescan ./ S2Linescan;
+  ratioScan_1_S1S2 = mean(furrow1Sliding_S1 ./ furrow1Sliding_S2);
+  ratioScan_2_S1S2 = mean(furrow2Sliding_S1 ./ furrow2Sliding_S2);
   
-  ratioSliding_Furrow1 = getIntensityUnderSlidingWindow(ratioScanS1S2,sWSet,furrowCenter1)
-  ratioSliding_Furrow2 = getIntensityUnderSlidingWindow(ratioScanS1S2,sWSet,furrowCenter1)
+  ratioCurve_1__S1S2 = mean(curve1Sliding_S1 ./ curve1Sliding_S2);
+  ratioCurve_2__S1S2 = mean(curve2Sliding_S1 ./ curve2Sliding_S2);
   
-  plot(1:length(ratioSliding_Furrow1), ratioSliding_Furrow1,'-')
-  yL = get(gca,'YLim');
-  hold on
-  line([furrowCenter1 furrowCenter1],yL,'Color','r');
-  line([furrowCenter2 furrowCenter2],yL,'Color','b');
-  line([curveCenter1 curveCenter1],yL,'Color','g');
-  line([curveCenter2 curveCenter2],yL,'Color','g');
+  
+  for  subrun =1:length(splineFitOutline)
+  
+      BW1(splineFitOutline(subrun,1),splineFitOutline(subrun,2)) = 255;
+      
+  end
+  
+  xp = [Furrow1(1),Furrow2(1)];
+  yp = [Furrow1(2),Furrow2(2)];
+  
+  yCat = doInterpolateLineThroughPoints(xp, yp, BW1)
+  
+  tmp = BW1;
+  tmp(:,:) = 0;
+  
+  for subrun = 1:length(yCat)
+     
+      tmp(yCat(subrun,1),yCat(subrun,2)) = 125;
+      
+  end
+    
+    tmp1 = im2bw(BW1);
+    tmp1 = tmp1.*125;
 
+    tmp2 = tmp + tmp1;
+    imshow(tmp2)
+
+   % tmp2 = bwmorph(tmp2,'bridge',8);
     
     
-  plot(1:length( ratioScanS1S2),  ratioScanS1S2,'-')
-  yL = get(gca,'YLim');
-  hold on
-  line([furrowCenter1 furrowCenter1],yL,'Color','r');
-  line([furrowCenter2 furrowCenter2],yL,'Color','b');
-  line([curveCenter1 curveCenter1],yL,'Color','g');
-  line([curveCenter2 curveCenter2],yL,'Color','g');
-  
-  
-  % connectedPoints = doConnectTwoPoints(xp,yp,imgOut)
-    %   yCat = doInterpolateLineThroughPoints(xp, yp, imgOut)
-       
-    %   tmp1 = imgOut; tmp1(:,:)=0; %tmp1 = im2bw(tmp1);
-       
-    %   for subrun = length(yCat)
-          
-    %      tmp1((round(yCat(subrun,1))),round(yCat(subrun,2))) = 125;
-            
-           
-    %   end
-           
-          %  tmp1 = bwmorph(tmp1,'bridge',8);
-          %  tmp1 = im2bw(tmp1);
-          %  tmp1 = tmp1.*125;
-         
-   
+
+[rIntersect2,cIntersect2] = find(tmp2 > 135)
+
+[Curvature, tmp] = doGetCurvature(rIntersect2(1),cIntersect2(1),splineFitOutline,30,BW1);
     
 
-    %tmp2 = tmp + tmp1;
-    %imshow(tmp2)
+CurvatureStore{1} = Curvature;
+[Curvature, tmp] = doGetCurvature(rIntersect2(end),cIntersect2(end),splineFitOutline,50,BW1);
+CurvatureStore{2} = Curvature;
 
 
-%[rIntersect2,cIntersect2] = find(tmp2 > 135)
-           
 
+
+
+
+h = figure
+
+imshow(tmp,[])
+hold on
+ circle(circleParam(1),circleParam(2),circleParam(3));
+
+orient landscape;
+print(h,'-dpdf', [curdir '/'  tifFilename,'_FitCircle.pdf']);%tifCurvetifFilename);
+close all
+
+%%%%%%%%% Curvature of non furrow curve
+
+
+  xp = [Curve1(1),Curve2(1)];
+  yp = [Curve1(2),Curve2(2)];
+  
+  yCat = doInterpolateLineThroughPoints(xp, yp, BW1)
+  
+  tmp = BW1;
+  tmp(:,:) = 0;
+  
+  for subrun = 1:length(yCat)
+     
+      tmp(yCat(subrun,1),yCat(subrun,2)) = 125;
+      
+  end
+    
+    tmp1 = im2bw(BW1);
+    tmp1 = tmp1.*125;
+
+    tmp2 = tmp + tmp1;
+    imshow(tmp2)
+
+   % tmp2 = bwmorph(tmp2,'bridge',8);
+    
+    
+
+[rIntersect2,cIntersect2] = find(tmp2 > 135)
+
+[Curvature, tmp] = doGetCurvature(rIntersect2(1),cIntersect2(1),splineFitOutline,50,BW1);
+    
+
+CurvatureStore{3} = Curvature;
+[Curvature, tmp] = doGetCurvature(rIntersect2(end),cIntersect2(end),splineFitOutline,50,BW1);
+CurvatureStore{4} = Curvature;
+
+
+
+  
+  
