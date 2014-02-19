@@ -155,7 +155,7 @@ longAxis = round((4 / voxelX_mum)/2);
 
 %%%%%% Edges of the horizontal box
 yTest = [y-shortAxis y+shortAxis y+shortAxis y-shortAxis y-shortAxis]'
-xTest = [x-longAxis x-longAxis x+longAxis x+longAxis x-longAxis]'
+xTest =    [x-longAxis x-longAxis x+longAxis x+longAxis x-longAxis]'
 
 yTestVer = [y-longAxis y-longAxis y+longAxis y+longAxis y-longAxis]'
 xTestVer = [x-shortAxis x+shortAxis x+shortAxis x-shortAxis x-shortAxis]'
