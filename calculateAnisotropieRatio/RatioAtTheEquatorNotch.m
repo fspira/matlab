@@ -235,11 +235,18 @@ cd(curdir)
          furrowDiameter = dist1*voxelX_mum;
        
           [furrowCenter1,furrowCenter2, curveCenter1, curveCenter2]= doDetectCenterOfRoi(redNorm ,splineFitOutline,Furrow1,Furrow2,Curve1,Curve2)
-          doCutSpline
-          [S1Linescan, S2Linescan] = doGetLinescan(S1Norm, S2Norm,splineFitOutline);
+          %doCutSpline
+          [S1Linescan, S2Linescan] = doGetLinescan(S1, S2,splineFitOutline);
           
           S1Linescan = S1Linescan{1};
           S2Linescan = S2Linescan{1};
+          
+          
+          S1Norm =  S1Linescan ./ mean(S1Linescan);
+          S2Norm = S2Linescan ./ mean(S2Linescan);
+          
+          S1Linescan = S1Norm;
+          S2Linescan = S2Norm;
           
         %%%% set sliding window size in micron
 windowSize = 2; %%% in microns
@@ -314,7 +321,7 @@ h = figure
 
 imshow(tmp,[])
 hold on
- circle(circleParam(1),circleParam(2),circleParam(3));
+ circle(Curvature(1),Curvature(2),Curvature(3));
 
 orient landscape;
 print(h,'-dpdf', [curdir '/'  tifFilename,'_FitCircle.pdf']);%tifCurvetifFilename);

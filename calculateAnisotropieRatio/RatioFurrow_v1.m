@@ -21,32 +21,32 @@ addpath('/Users/spira/Desktop/Desktop/LifeactCherry_GlGPIEgfp/131204')
 addpath('/Users/spira/Documents/MATLAB_scripte/ImageProcessing/Utilities')
 curdir = pwd;
 
-load('voxelX_mum.mat');
-load('voxelX_mumMid');
+%load('voxelX_mum.mat');
+%load('voxelX_mumMid');
  
-tifFilename = 'pos7_notch.tif';
-tifFilenameMid = 'pos7_conv.tif';
+tifFilename = 'cell12_halfStack.lsm';
+tifFilenameMid = 'cell12_mid.lsm';
 
-zSectionToAnalyze = 1% notch casette image
+zSectionToAnalyze = 5% notch casette image
 zSectionMidStack = 1; % conventional image
 
 %%%%% Load midSection
 
-imgMid = imread(char(tifFilenameMid));
+%imgMid = imread(char(tifFilenameMid));
 imgMidtmp = tiffread30(char(tifFilenameMid));
 
 imgMidtmpTmp = cat(3,imgMidtmp.data);
-imgMid = imgMidtmpTmp;
-%imgMidtmpTmp = imgMidtmpTmp(:,:,zSectionMidStack);
+%imgMid = imgMidtmpTmp;
+imgMidtmpTmp = imgMidtmpTmp(:,:,zSectionMidStack);
 
-%voxelX = getfield(imgMidtmp,'lsm','VoxelSizeX');
-%voxelX_mumMid = voxelX*1000000;
+voxelX = getfield(imgMidtmp,'lsm','VoxelSizeX');
+voxelX_mumMid = voxelX*1000000;
 
-%for lauf = 1:3
+for lauf = 1:3
     
-%    imgMid(:,:,lauf) = imgMidtmpTmp{lauf};
+    imgMid(:,:,lauf) = imgMidtmpTmp{lauf};
     
-%end
+end
 
 clear imgMidtmp
 clear imgMidtmpTmp
@@ -54,8 +54,8 @@ clear imgMidtmpTmp
 
 
 imgOrig = tiffread30(char(tifFilename))
-%voxelX = getfield(imgOrig,'lsm','VoxelSizeX');
-%voxelX_mum = voxelX*1000000;
+voxelX = getfield(imgOrig,'lsm','VoxelSizeX');
+voxelX_mum = voxelX*1000000;
 
 
  truncName = findstr(tifFilename,'.lsm');
@@ -72,17 +72,21 @@ folderName = tifFilename(1:truncName-1);
 mkdir([curdir '/' folderName]);
 
 img = cat(3,imgOrig.data);
-imgOrigGreen = img(:,:,1);
-imgOrigRed = img(:,:,2);
+
+%img = img(:,:,zSectionToAnalyze);
+
+
+%imgOrigGreen = img(:,:,1);
+%imgOrigRed = img(:,:,2);
 
 [m n p] = size(img);
 
-p=1
+%p=1
 
-%for lauf = 1:p
-%    imgOrigGreen(:,:,lauf) = img{:,1,lauf};
-%    imgOrigRed(:,:,lauf) = img{:,2,lauf};
-%end
+for lauf = 1:p
+    imgOrigGreen(:,:,lauf) = img{:,1,lauf};
+    imgOrigRed(:,:,lauf) = img{:,2,lauf};
+end
 
 
 greenImg = double(imgOrigGreen);
@@ -245,9 +249,9 @@ tiffwrite_mat(imgMerge,[tifFilename,'RGBImage.tif']);
 
 
 %%%%% High background in the mid image - therefore substract background
+zSectionMidStack = 1;
 
-
-[imgMidTmp1 imgMidTmp2] = bkgCorrectionRedGreenExt(imgMid(:,:,1), imgMid(:,:,2),zSectionToAnalyze);
+[imgMidTmp1 imgMidTmp2] = bkgCorrectionRedGreenExt(imgMid(:,:,1), imgMid(:,:,2),zSectionMidStack);
 
 clear imgMid
 imgMid(:,:,1) = imgMidTmp1;
