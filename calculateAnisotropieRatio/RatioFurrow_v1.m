@@ -14,21 +14,34 @@ addpath('/Applications/Fiji.app/scripts')
 
 addpath('/Applications/Fiji.app/scripts')
 addpath('/Users/spira/Documents/Matlab_scripte/Image_Processing_utils')
-addpath('/Users/spira/Desktop/programme')
+
 addpath('/Users/spira/Documents/Matlab_scripte/tiffIO')
 addpath('/Users/spira/Documents/Matlab_scripte/')
 addpath('/Users/spira/Desktop/Desktop/LifeactCherry_GlGPIEgfp/131204')
 addpath('/Users/spira/Documents/MATLAB_scripte/ImageProcessing/Utilities')
+
+addpath('/Users/spira/Desktop/programme/calculateAnisotropieRatio')
+addpath('/Users/spira/Desktop/programme/centerOfMass')
+addpath('/Users/spira/Desktop/programme/curvature')
+addpath('/Users/spira/Desktop/programme/determineAngle')
+addpath('/Users/spira/Desktop/programme/staging')
+addpath('/Users/spira/Desktop/programme/tools')
+
+
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell12_halfStack.lsm';
-tifFilenameMid = 'cell12_mid.lsm';
+tifFilename = 'cell1_notch.lsm';
+tifFilenameMid = 'cell1_conv.lsm';
 
-zSectionToAnalyze = 5% notch casette image
-zSectionMidStack = 1; % conventional image
+saveFileName = 'cell_1_pole';
+
+load('ratioAnisoParameters.mat')
+
+zSectionToAnalyze = 7% notch casette image
+zSectionMidStack = 10; % conventional image
 
 %%%%% Load midSection
 
@@ -128,9 +141,13 @@ D_Anisotropie = D;
 
 %%%%%% normalize to mean itensity of each channel
 %[m n p] = size(img);
+
+S1Norm = S1;
+S2Norm = S2;
+
 for lauf = 1:p
-    S1Norm(:,:,lauf) = S1(:,:,lauf)./mean(mean(S1(:,:,lauf)));
-    S2Norm(:,:,lauf) = S2(:,:,lauf)./mean(mean(S2(:,:,lauf)));
+   % S1Norm(:,:,lauf) = S1(:,:,lauf)./mean(mean(S1(:,:,lauf)));
+   % S2Norm(:,:,lauf) = S2(:,:,lauf)./mean(mean(S2(:,:,lauf)));
     ratio(:,:,lauf) = S2Norm(:,:,lauf)./S1Norm(:,:,lauf);
   
 end
@@ -251,11 +268,11 @@ tiffwrite_mat(imgMerge,[tifFilename,'RGBImage.tif']);
 %%%%% High background in the mid image - therefore substract background
 zSectionMidStack = 1;
 
-[imgMidTmp1 imgMidTmp2] = bkgCorrectionRedGreenExt(imgMid(:,:,1), imgMid(:,:,2),zSectionMidStack);
+%[imgMidTmp1 imgMidTmp2] = bkgCorrectionRedGreenExt(imgMid(:,:,1), imgMid(:,:,2),zSectionMidStack);
 
-clear imgMid
-imgMid(:,:,1) = imgMidTmp1;
-imgMid(:,:,2) = imgMidTmp2;
+%clear imgMid
+%imgMid(:,:,1) = imgMidTmp1;
+%imgMid(:,:,2) = imgMidTmp2;
 
 [distChrom distContractileRing orientation] = doAngleDistances_v1(imgMid,voxelX_mumMid,tifFilename);
 
@@ -323,7 +340,47 @@ cd(curdir)
   
  %   MIJ.run('closeAllWindows');
  predicted_time
+ 
+ 
+   structName{1} = 'chromatin_distance'
+   structName{2} =  'contractile_ring_diameter'
+   structName{3} =   'orientation'
+   structName{4} =  'analysis_frame'
+   structName{5} = 'averageRatioD_Horizontal'
+   structName{6} = 'averageRatio_Horizontal'
+   structName{7} = 'averageRatioD_Vertical'
+   structName{8} = 'averageRatio_Vertical' 
+   structName{9} = 'predicted_time'
+   structName{10} = 'probability'
+   
+    saveVariables = {};
 
-close all
-
+            saveVariables{1} =  distChrom;
+            saveVariables{2} =  distContractileRing;
+            
+            
+            saveVariables{3} =  orientation;
+            saveVariables{4} = analysisFrame;
+            saveVariables{5} = averageRatioD(analysisFrame);
+            saveVariables{6} = averageRatio(analysisFrame);
+            saveVariables{7} = averageRatioDVer(analysisFrame);
+            saveVariables{8} = averageRatioVer(analysisFrame);
+            saveVariables{9} = predicted_time;
+            saveVariables{10} = flagOut;
+            
+   
+ 
+   
+    for lauf = 1:10
+        
+       
+        s.(saveFileName).(structName{lauf}) = struct(structName{lauf},saveVariables{lauf})
+     
+        
+    end
     
+    save('ratioAnisoParameters.mat','s','-append');
+    %load('ratioAnisoParameters.mat')
+
+    filename = [tifFilename, '.mat'];
+    %save(filename)
