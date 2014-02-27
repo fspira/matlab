@@ -33,15 +33,15 @@ curdir = pwd;
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell1_notch.lsm';
-tifFilenameMid = 'cell1_conv.lsm';
+tifFilename = 'cell13_notch_bottomn.lsm';
+tifFilenameMid = 'cell13_conv.lsm';
 
-saveFileName = 'cell_1_pole';
+saveFileName = 'pos13_notch_Pole';
 
-load('ratioAnisoParameters.mat')
+%load('ratioAnisoParameters.mat')
 
-zSectionToAnalyze = 7% notch casette image
-zSectionMidStack = 10; % conventional image
+zSectionToAnalyze =6% notch casette image
+zSectionMidStack = 11; % conventional image
 
 %%%%% Load midSection
 
@@ -50,6 +50,9 @@ imgMidtmp = tiffread30(char(tifFilenameMid));
 
 imgMidtmpTmp = cat(3,imgMidtmp.data);
 %imgMid = imgMidtmpTmp;
+
+%%%%%% section required for multi stack images
+
 imgMidtmpTmp = imgMidtmpTmp(:,:,zSectionMidStack);
 
 voxelX = getfield(imgMidtmp,'lsm','VoxelSizeX');
@@ -86,7 +89,7 @@ mkdir([curdir '/' folderName]);
 
 img = cat(3,imgOrig.data);
 
-%img = img(:,:,zSectionToAnalyze);
+img = img(:,:,zSectionToAnalyze);
 
 
 %imgOrigGreen = img(:,:,1);
@@ -95,6 +98,8 @@ img = cat(3,imgOrig.data);
 [m n p] = size(img);
 
 %p=1
+
+%%%%% multi file tiff
 
 for lauf = 1:p
     imgOrigGreen(:,:,lauf) = img{:,1,lauf};
@@ -114,7 +119,7 @@ for lauf =1 :p
              
     imgMerge(:,:,:,lauf) = greenStackRGB(:,:,:,lauf) + redStackRGB(:,:,:,lauf);
 end
-
+zSectionToAnalyze = 1;
 [redImg greenImg] = bkgCorrectionRedGreenExt(redImg, greenImg,zSectionToAnalyze);
 
 %%%%% Setting negative values to small values, to avoid division through zero
@@ -280,7 +285,8 @@ stagingParameters = double([distChrom distContractileRing]);
 
 [density flagOut predicted_time] = doMapTime(stagingParameters);
 
-flagOut = double(flagOut)
+flagOut =  double(flagOut)
+
 
 cd(curdir)
               saveVariables = {};
@@ -379,7 +385,7 @@ cd(curdir)
         
     end
     
-    save('ratioAnisoParameters.mat','s','-append');
+    save([saveFileName, '.mat'],'s')%,'-append');
     %load('ratioAnisoParameters.mat')
 
     filename = [tifFilename, '.mat'];
