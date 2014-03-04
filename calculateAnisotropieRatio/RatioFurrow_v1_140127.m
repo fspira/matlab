@@ -30,17 +30,17 @@ addpath('/Users/spira/Desktop/programme/tools')
 
 curdir = pwd;
 
-%load('voxelX_mum.mat');
-%load('voxelX_mumMid');
+load('voxelX_mum.mat');
+load('voxelX_mumMid');
  
-tifFilename = 'cell12_halfStack.lsm';
-tifFilenameMid = 'cell12_mid.lsm';
+tifFilename = 'cell7_notch.tif';
+tifFilenameMid = 'cell7_conv.tif';
 
-saveFileName = 'pos12_notch_Pole';
+saveFileName = 'pos7_notch_Center';
 
 %load('ratioAnisoParameters.mat')
 
-zSectionToAnalyze =3% notch casette image
+zSectionToAnalyze = 1% notch casette image
 zSectionMidStack = 1; % conventional image
 
 %%%%% Load midSection
@@ -49,20 +49,20 @@ zSectionMidStack = 1; % conventional image
 imgMidtmp = tiffread30(char(tifFilenameMid));
 
 imgMidtmpTmp = cat(3,imgMidtmp.data);
-%imgMid = imgMidtmpTmp;
+imgMid = imgMidtmpTmp;
 
 %%%%%% section required for multi stack images
 
 %imgMidtmpTmp = imgMidtmpTmp(:,:,zSectionMidStack);
 
-voxelX = getfield(imgMidtmp,'lsm','VoxelSizeX');
-voxelX_mumMid = voxelX*1000000;
+%voxelX = getfield(imgMidtmp,'lsm','VoxelSizeX');
+%voxelX_mumMid = voxelX*1000000;
 
-for lauf = 1:3
+%for lauf = 1:3
     
-    imgMid(:,:,lauf) = imgMidtmpTmp{lauf};
+%    imgMid(:,:,lauf) = imgMidtmpTmp{lauf};
     
-end
+%end
 
 clear imgMidtmp
 clear imgMidtmpTmp
@@ -70,8 +70,8 @@ clear imgMidtmpTmp
 
 
 imgOrig = tiffread30(char(tifFilename))
-voxelX = getfield(imgOrig,'lsm','VoxelSizeX');
-voxelX_mum = voxelX*1000000;
+%voxelX = getfield(imgOrig,'lsm','VoxelSizeX');
+%voxelX_mum = voxelX*1000000;
 
 
  truncName = findstr(tifFilename,'.lsm');
@@ -89,22 +89,22 @@ mkdir([curdir '/' folderName]);
 
 img = cat(3,imgOrig.data);
 
-img = img(:,:,zSectionToAnalyze);
+%img = img(:,:,zSectionToAnalyze);
 
 
-%imgOrigGreen = img(:,:,1);
-%imgOrigRed = img(:,:,2);
+imgOrigGreen = img(:,:,1);
+imgOrigRed = img(:,:,2);
 
 [m n p] = size(img);
 
-%p=1
+p=1
 
 %%%%% multi file tiff
 
-for lauf = 1:p
-    imgOrigGreen(:,:,lauf) = img{:,1,lauf};
-    imgOrigRed(:,:,lauf) = img{:,2,lauf};
-end
+%for lauf = 1:p
+%    imgOrigGreen(:,:,lauf) = img{:,1,lauf};
+%    imgOrigRed(:,:,lauf) = img{:,2,lauf};
+%end
 
 
 greenImg = double(imgOrigGreen);

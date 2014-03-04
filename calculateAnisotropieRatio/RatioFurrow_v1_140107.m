@@ -33,15 +33,15 @@ curdir = pwd;
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell12_halfStack.lsm';
-tifFilenameMid = 'cell12_mid.lsm';
+tifFilename = 'cell13_notch_bottomn.lsm';
+tifFilenameMid = 'cell13_conv.lsm';
 
-saveFileName = 'pos12_notch_Pole';
+saveFileName = 'pos13_notch_Center';
 
 %load('ratioAnisoParameters.mat')
 
-zSectionToAnalyze =3% notch casette image
-zSectionMidStack = 1; % conventional image
+zSectionToAnalyze = 7% notch casette image
+zSectionMidStack = 12; % conventional image
 
 %%%%% Load midSection
 
@@ -53,7 +53,7 @@ imgMidtmpTmp = cat(3,imgMidtmp.data);
 
 %%%%%% section required for multi stack images
 
-%imgMidtmpTmp = imgMidtmpTmp(:,:,zSectionMidStack);
+imgMidtmpTmp = imgMidtmpTmp(:,:,zSectionMidStack);
 
 voxelX = getfield(imgMidtmp,'lsm','VoxelSizeX');
 voxelX_mumMid = voxelX*1000000;

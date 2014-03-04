@@ -3,8 +3,8 @@ function [filenameCenter, filenamePole,  chromatinDistance_center,aniso_vertical
       chromatinDistance_pole, aniso_vertical_pole,ratio_vertical_pole, predictedTime_vertical_pole, fileName_vertical_pole...
      aniso_horizontal_pole,ratio_horizontal_pole, predictedTime_horizontal_pole, fileName_horizontal_pole] = doLoadFiles(refDir,loadPath)
 
-%refDir = refdir_2
-%loadPath = loadPath_2
+%refDir = refdir_3
+%loadPath = loadPath_3
 filenameCenter = {};
 filenamePole = {};
 centerData = {};
@@ -13,36 +13,44 @@ poleData = {};
 for r = 3:length({refDir.name})
     
   
-            fileList = getfield(refDir,{r},'name')
+         fileList = getfield(refDir,{r},'name')
             
-         
-            
-            suffixCenter = 0;
-            suffixPole = 0;
+                
+                
           
             
-            if suffixCenter <= findstr(fileList,'Center.')
-                suffixCenter = findstr(fileList,'Center') 
-            else
-                 suffixCenter = 5;
-            end
-            
-            if suffixPole <= findstr(fileList,'Pole.') 
-                suffixPole = findstr(fileList,'Pole') 
-            else
-                suffixPole = 5;
-            end
-              
-            if fileList(suffixCenter:suffixCenter+5) == ('Center') 
     
+                if findstr(fileList, '.DS_Store')
                     
-                    filenameCenter{length(filenameCenter)+1} = fileList;
-           
-            elseif fileList(suffixPole:suffixPole+3) == ('Pole')
-                   
-                filenamePole{length(filenamePole)+1} = fileList;
-            
-            end
+                      else
+
+                        suffixCenter = 0;
+                        suffixPole = 0;
+
+
+                        if suffixCenter <= findstr(fileList,'Center.')
+                            suffixCenter = findstr(fileList,'Center') 
+                        else
+                             suffixCenter = 5;
+                        end
+
+                        if suffixPole <= findstr(fileList,'Pole.') 
+                            suffixPole = findstr(fileList,'Pole') 
+                        else
+                            suffixPole = 5;
+                        end
+
+                        if fileList(suffixCenter:suffixCenter+5) == ('Center') 
+
+
+                                filenameCenter{length(filenameCenter)+1} = fileList;
+
+                        elseif fileList(suffixPole:suffixPole+3) == ('Pole')
+
+                            filenamePole{length(filenamePole)+1} = fileList;
+
+                        end
+                end
             
 end
             
