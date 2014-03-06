@@ -32,18 +32,18 @@ addpath('/Users/spira/Desktop/programme/tools')
 
 
 anaOnset = 1;
-ingressionFrame = 6;
-lastFrameToConsider = 11;
+ingressionFrame = 4;
+lastFrameToConsider = 8;
 
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell9_100nm_vertical.lsm';
+tifFilename = 'cell3_100nm_horizontal.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell9_100nm_vertical_center';
+saveFileName = 'cell3_100nm_horizontal_center';
 
 %load('ratioAnisoParameters.mat')
 
@@ -302,6 +302,9 @@ for lauf = 1:p
         Furrow2Raw_S2_Store(lauf) = Furrow2_S2;
 
         FurrowRawMeanStore(lauf) = (Furrow2_S1 + Furrow1_S1)/2
+        
+         Furrow_S1_RawMeanStore(lauf) = (Furrow2_S1 + Furrow1_S1)/2
+         Furrow_S2_RawMeanStore(lauf) = (Furrow2_S2 + Furrow1_S2)/2
 
         Pole1Raw_S1_Store(lauf) = Pole1_S1
         Pole1Raw_S2_Store(lauf) = Pole1_S2
@@ -310,6 +313,9 @@ for lauf = 1:p
         Pole2Raw_S2_Store(lauf) = Pole2_S2
 
         PoleRawMeanStore(lauf) = (Pole1_S1 + Pole1_S2)/2
+         
+        Pole_S1_RawMeanStore(lauf) = (Pole1_S1 + Pole1_S2)/2
+        Pole_S2_RawMeanStore(lauf) = (Pole1_S2 + Pole1_22)/2
 
 
         

@@ -32,18 +32,18 @@ addpath('/Users/spira/Desktop/programme/tools')
 
 
 anaOnset = 1;
-ingressionFrame = 6;
-lastFrameToConsider = 11;
+ingressionFrame = 4;
+lastFrameToConsider = 13;
 
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell9_100nm_vertical.lsm';
+tifFilename = 'cell4_100nm_horizontal_SP_switch.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell9_100nm_vertical_center';
+saveFileName = 'cell4_100nm_horizontal_SP_switch_center';
 
 %load('ratioAnisoParameters.mat')
 
@@ -229,7 +229,7 @@ for lauf = 1:p
         Furrow1_BWVer_BoxStore{lauf} = BWVer;
         
         
-        [Furrow1,Furrow1_S1,Furrow1_S2] = doCalculateRatioBoundingBox(ratio,BWVer, BW_Box, S1(:,:,lauf), S2(:,:,lauf))
+        [Furrow1,Furrow1_S1,Furrow1_S2] = doCalculateRatioBoundingBox(ratio,BWHor, BW_Box, S1(:,:,lauf), S2(:,:,lauf))
 
 
        % [BW_Box BWHor BWVer x y] = doDrawAnalysisBox(imgMerge(:,:,:,lauf),analysisFrame,ratio,voxelX_mum);
@@ -241,7 +241,7 @@ for lauf = 1:p
         x = x_Out{2};
         y = y_Out{2};
        
-       [Furrow2,Furrow2_S1,Furrow2_S2] = doCalculateRatioBoundingBox(ratio,BWVer, BW_Box, S1(:,:,lauf), S2(:,:,lauf))
+       [Furrow2,Furrow2_S1,Furrow2_S2] = doCalculateRatioBoundingBox(ratio,BWHor, BW_Box, S1(:,:,lauf), S2(:,:,lauf))
 
         xFurrow2{lauf} = x;
         yFurrow2{lauf} = y;
@@ -264,7 +264,7 @@ for lauf = 1:p
        xPole1{lauf} = x;
        yPole{lauf} = y;
        
-       [Pole1, Pole1_S1, Pole1_S2] = doCalculateRatioBoundingBox(ratio,BWHor, BW_Box, S1(:,:,lauf), S2(:,:,lauf))
+       [Pole1, Pole1_S1, Pole1_S2] = doCalculateRatioBoundingBox(ratio,BWVer, BW_Box, S1(:,:,lauf), S2(:,:,lauf))
 
         
 
@@ -281,7 +281,7 @@ for lauf = 1:p
         y = y_Out{4};
 
     %    [BW_Box BWHor BWVer x y] = doDrawAnalysisBox(imgMerge(:,:,:,lauf),analysisFrame,ratio,voxelX_mum);
-        [Pole2, Pole2_S1, Pole2_S2] = doCalculateRatioBoundingBox(ratio,BWHor, BW_Box,S1(:,:,lauf), S2(:,:,lauf))
+        [Pole2, Pole2_S1, Pole2_S2] = doCalculateRatioBoundingBox(ratio,BWVer, BW_Box,S1(:,:,lauf), S2(:,:,lauf))
 
         xPole2{lauf} = x;
         yPole2{lauf} = y;
