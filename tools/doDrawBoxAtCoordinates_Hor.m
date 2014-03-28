@@ -1,4 +1,4 @@
-function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinates(x,y,S1_In,voxelX_mum)
+function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinates_Hor(x,y,S1_In,voxelX_mum)
     
    analysisFrame = 1;
 
@@ -26,7 +26,7 @@ function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinate
     BWVer_Out = BWVer;
     
     
-    imgMergeSaveVertical = doDrawROI(S1_In,BWVer,analysisFrame);
+    imgMergeSaveVertical = doDrawROI(S1_In,BWHor,analysisFrame);
     
     
 end

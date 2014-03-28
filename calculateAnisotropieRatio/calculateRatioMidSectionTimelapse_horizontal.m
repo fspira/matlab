@@ -31,19 +31,19 @@ addpath('/Users/spira/Desktop/programme/staging')
 addpath('/Users/spira/Desktop/programme/tools')
 
 
-anaOnset = 1;
-ingressionFrame = 4;
-lastFrameToConsider = 13;
+anaOnset = 2;
+ingressionFrame = 5;
+lastFrameToConsider = 11;
 
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell4_100nm_horizontal_SP_switch.lsm';
+tifFilename = 'cell6_100nm_horizontal.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell4_100nm_horizontal_SP_switch_center';
+saveFileName = 'cell6_100nm_horizontal_center';
 
 %load('ratioAnisoParameters.mat')
 

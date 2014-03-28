@@ -1,8 +1,8 @@
-function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinates(x,y,S1_In,voxelX_mum)
+function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinates_Ver_07_1(x,y,S1_In,voxelX_mum)
     
    analysisFrame = 1;
 
-    shortAxis = round((0.5 /voxelX_mum)/2);
+    shortAxis = round((0.7 /voxelX_mum)/2);
     longAxis = round((1 / voxelX_mum)/2);
 
     yTest =    [y-shortAxis y+shortAxis y+shortAxis y-shortAxis y-shortAxis]';

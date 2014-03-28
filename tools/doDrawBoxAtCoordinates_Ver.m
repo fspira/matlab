@@ -1,4 +1,4 @@
-function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinates(x,y,S1_In,voxelX_mum)
+function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinates_Ver(x,y,S1_In,voxelX_mum)
     
    analysisFrame = 1;
 

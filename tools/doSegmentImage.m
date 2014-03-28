@@ -1,9 +1,9 @@
 function t3Store = doSegmentImage(S1)
 test  = S1;%redStack(:,:,1);
 figure(1)
-imshow(test(:,:,:),[]);
+imshow(test(:,:,1),[]);
 %marker = testNorm;
-testNorm = normalizedImage(test);
+testNorm = normalizedImage(test(:,:,1));
 marker = false(size(testNorm));
 
 
@@ -22,7 +22,7 @@ end
 testNorm = normalizedImage(S1(:,:,1));
 
 
-h = fspecial('gaussian', 10, 10) 
+h = fspecial('gaussian', 5, 5) 
 redStackGauss = imfilter(S1(:,:,:),h);
 imshow(redStackGauss(:,:,1),[])
 

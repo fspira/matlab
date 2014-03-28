@@ -27,6 +27,6 @@ Background2 =  mean(...
     [], lastFrameToConsider));
 
 for lauf =1:pf
-    imgCorr1(:,:,lauf) = double(img1(:,:,lauf)) - round(Background1(lauf));
-    imgCorr2(:,:,lauf) = double(img2(:,:,lauf)) - round(Background2(lauf));
+    imgCorr1(:,:,lauf) =uint32(img1(:,:,lauf)) - round(Background1(lauf));
+    imgCorr2(:,:,lauf) = uint32(img2(:,:,lauf)) - round(Background2(lauf));
 end

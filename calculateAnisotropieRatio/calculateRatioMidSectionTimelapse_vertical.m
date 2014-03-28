@@ -31,19 +31,19 @@ addpath('/Users/spira/Desktop/programme/staging')
 addpath('/Users/spira/Desktop/programme/tools')
 
 
-anaOnset = 1;
-ingressionFrame = 4;
-lastFrameToConsider = 8;
+anaOnset = 4;
+ingressionFrame = 9;
+lastFrameToConsider = 16;
 
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell3_100nm_horizontal.lsm';
+tifFilename = 'cell4_100nm_vertical.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell3_100nm_horizontal_center';
+saveFileName = 'cell4_100nm_vertical_center';
 
 %load('ratioAnisoParameters.mat')
 
@@ -315,7 +315,7 @@ for lauf = 1:p
         PoleRawMeanStore(lauf) = (Pole1_S1 + Pole1_S2)/2
          
         Pole_S1_RawMeanStore(lauf) = (Pole1_S1 + Pole1_S2)/2
-        Pole_S2_RawMeanStore(lauf) = (Pole1_S2 + Pole1_22)/2
+        Pole_S2_RawMeanStore(lauf) = (Pole1_S2 + Pole1_S2)/2
 
 
         
