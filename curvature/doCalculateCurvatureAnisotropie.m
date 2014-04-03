@@ -76,8 +76,8 @@ end
 
     %imwrite(tmp,'curvatureTest','tif')
     
-    circleParam = Kasa([splineA_y,splineA_x]);
-    circleParam = LM([splineA_y,splineA_x],circleParam)
+  circleParam = Kasa([splineA_y,splineA_x]);
+        circleParam = LM([splineA_y,splineA_x], circleParam)
     
     imshow(tmp,[])
     hold on

@@ -9,3 +9,4 @@ function tmp1 = doConnectTwoPoints(xp,yp,BW2)
      binaryImage1 = hLine.createMask();
      
      tmp1 = uint8(BW2) + uint8( binaryImage1);
+     close all

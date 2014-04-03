@@ -5,7 +5,7 @@
 %%%%%%
 
 
-clear all
+%clear all
 
 distvec = linspace(0,1,256)';
 red = zeros(256,3);
@@ -39,22 +39,22 @@ addpath('/Users/spira/Desktop/programme/curvature')
 addpath('/Users/spira/Desktop/programme/determineAngle')
 addpath('/Users/spira/Desktop/programme/staging')
 addpath('/Users/spira/Desktop/programme/tools')
-Miji;
+%Miji;
 %MIJ.start('/Applications/Fiji')
 
-anaOnset = 3;
-ingressionFrame = 9;
-lastFrameToConsider = 16;
+%anaOnset = 3;
+%ingressionFrame = 9;
+%lastFrameToConsider = 16;
 
-curdir = pwd;
+%curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell8_100nm_vertical.lsm';
+tifFilename = 'cell3_100nm_vertical.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell8_100nm_vertical_center_CurvatureKymo';
+saveFileName = 'cell3_100nm_vertical_center_CurvatureKymo';
 
 clear imgMidtmp
 clear imgMidtmpTmp
@@ -149,7 +149,7 @@ for lauf = 1: lastFrameToConsider
       %MIJ.setRoi( [ selectedRoi(:,2)'; selectedRoi(:,1)'], ij.gui.Roi.POLYLINE);
     k = waitforbuttonpress 
     MIJ.run('saveMacro');
-    sROI= ReadImageJROI('Roi.zip');
+    sROI= ReadImageJROI('roi.zip');
     tmp = sROI{:,:}.mnCoordinates;
     cNew1Ref{lauf} = tmp(:,1);
     rNew1Ref{lauf} = tmp(:,2);
@@ -164,7 +164,7 @@ end
 channelMergeImage = (redImg(:,:,:)+ greenImg(:,:,:))./2;
     
 for lauf = 1:lastFrameToConsider
-     [xCoord,yCoord,regionIntersect,furrowRoi1,LinescanFurrow1]= splitFurrows(redImg(:,:,lauf),xFurrow1{lauf},yFurrow1{lauf},cNew1Ref{lauf},rNew1Ref{lauf},150,channelMergeImage(:,:,lauf)) ;   
+     [xCoord,yCoord,regionIntersect,furrowRoi1,LinescanFurrow1]= splitFurrows(redImg(:,:,lauf),xFurrow1{lauf},yFurrow1{lauf},cNew1Ref{lauf},rNew1Ref{lauf},250,channelMergeImage(:,:,lauf)) ;   
 
      
      LinescanFurrow1_Store{lauf} = LinescanFurrow1;
@@ -172,7 +172,7 @@ for lauf = 1:lastFrameToConsider
      furrowRoi1_Sammel{lauf} = furrowRoi1;
      midFurrow1(lauf) = regionIntersect;
 
-      [xCoord,yCoord,regionIntersect,furrowRoi2,LinescanFurrow2]= splitFurrows(redImg(:,:,lauf),xFurrow2{lauf},yFurrow2{lauf},cNew1Ref{lauf},rNew1Ref{lauf},150,channelMergeImage(:,:,lauf)) ;
+      [xCoord,yCoord,regionIntersect,furrowRoi2,LinescanFurrow2]= splitFurrows(redImg(:,:,lauf),xFurrow2{lauf},yFurrow2{lauf},cNew1Ref{lauf},rNew1Ref{lauf},250,channelMergeImage(:,:,lauf)) ;
      
       LinescanFurrow2_Store{lauf} = LinescanFurrow2;
       furrowRoi2_Sammel{lauf} = furrowRoi2;
@@ -190,16 +190,18 @@ end
 
 
 
-figure(1)
-hold on
+%hold on
+
+window =100;
+
  for lauf = 1:lastFrameToConsider
     centerPixel_1 =  midFurrow1(lauf)
     LinescanFurrow1Tmp_1 = LinescanFurrow1_Store{lauf}
-    LinescanFurrow1LinearTmp_1 = LinescanFurrow1Tmp_1(centerPixel_1-70:centerPixel_1+70);
+    LinescanFurrow1LinearTmp_1 = LinescanFurrow1Tmp_1(centerPixel_1-window:centerPixel_1+window);
     
     centerPixel_2 =  midFurrow2(lauf)
     LinescanFurrow1Tmp_2 = LinescanFurrow2_Store{lauf}
-    LinescanFurrow1LinearTmp_2 = LinescanFurrow1Tmp_2(centerPixel_2-70:centerPixel_2+70);
+    LinescanFurrow1LinearTmp_2 = LinescanFurrow1Tmp_2(centerPixel_2-window:centerPixel_2+window);
     LinescanMerge = (LinescanFurrow1LinearTmp_2 + LinescanFurrow1LinearTmp_1)./2;
     
     LinescanLinearStore(lauf,:) = LinescanMerge';
@@ -225,6 +227,7 @@ hold on
   %%%%%%% use the mean of the first and last values of the ROI - this
   %%%%%%% should represent values not part of the accumulation area. Use
   %%%%%%% intensities higher than BKG for analysis.
+  lauf
   
   for lauf = 1:lastFrameToConsider
       
@@ -234,7 +237,7 @@ hold on
        centerPixel =round(length(LinescanTmp)/2);
     %%%%%% Add 10% to Bkg to ensure that the signal chosen for analysis is
     %%%%%% real
-    LinescanBkgSub = LinescanTmp - (LinescanBkg+((LinescanBkg/100)*10));
+    LinescanBkgSub = LinescanTmp - (LinescanBkg+((LinescanBkg/100)*20));
     
     plot(1:length(LinescanBkgSub), LinescanBkgSub)
     %%%%%% Eliminate elements smaller than zero
@@ -267,7 +270,9 @@ hold on
      end
     
      LinescanAnalysis = LinescanBkgSub( leftEdge(1):rightEdge(1));
+     
     
+     
      plot(1:length(LinescanAnalysis), LinescanAnalysis)
     
     
@@ -277,9 +282,25 @@ hold on
       y_fitted_Store{lauf} = 0;
       x_ax_Store{lauf} = 0;
       maxDistance_Store{lauf} = 0;
-      
+      euclidianDistanceFurrow(lauf) = 0;
   else
 
+      
+      %%%%% Calculate euclidian distance - sum the distance between the
+      %%%%% center of each pixel
+      
+        furrowAnalysis = length(LinescanBkgSub( leftEdge(1):rightEdge(1)));
+             clear distTmp
+            for lauf_1 = 1:furrowAnalysis-1
+                distTmp(lauf_1) = pdist2(newFurrow(lauf_1,:),newFurrow(lauf_1+1,:))
+
+
+            end
+     
+            
+             euclidianDistanceFurrow(lauf) = sum(distTmp);
+      
+      
            distance = 0+voxelX_mum:voxelX_mum: length(LinescanAnalysis) * voxelX_mum;
            maxDistance = length(LinescanAnalysis) * voxelX_mum;
 
@@ -315,18 +336,29 @@ hold on
       y_fitted_Store{lauf} = y_fitted;
       x_ax_Store{lauf} = x_ax;
       maxDistance_Store{lauf} = maxDistance;
+      
   
  % provides all the fitted values for  
                         %%%%the specified x-axis
 
     end
   end
-
+  
+  %%%% Calculate euclidian distance between pixels to obtain a more
+  %%%% reliable measurment for the length of the furrow ROI
+  
+ 
+  euclidianDistanceFurrow = euclidianDistanceFurrow.*voxelX_mum;
+  
+ 
   for lauf = 1:lastFrameToConsider
       plot(lauf,maxDistance_Store{:,lauf},'bx')
       hold on
        plot(lauf,FWHM_Store{:,lauf},'rx')
   end
+  
+  hold on
+  plot(1:p,euclidianDistanceFurrow,'cx')
  
  %%%%% This piece of code determines the axis of the cell and suggests
     %%%%% position of pole-pole and furrow-furrow centers
@@ -334,20 +366,20 @@ hold on
    
     img= greenImg(:,:,1);
    img(:,:) = 0;
- for   lauf = 1:lastFrameToConsider;
-   newFurrow = furrowRoi2_Sammel{lauf}
-  MIJ.createImage(channelMergeImage(:,:,1));
+ %for   lauf = 1:lastFrameToConsider;
+ %  newFurrow = furrowRoi2_Sammel{lauf}
+ % MIJ.createImage(channelMergeImage(:,:,1));
          %MIJ.run('setLine8');
      % MIJ.setRoi( [ boundaryRoi(:,1)';  boundaryRoi(:,2)'], ij.gui.Roi.POLYLINE);
-      MIJ.setRoi( [ newFurrow(:,1)'; newFurrow(:,2)'], ij.gui.Roi.POLYLINE);
-       MIJ.run('getLinescanRed');
-      yRedAxisTest = MIJ.getColumn('y')
-            MIJ.closeAllWindows
+  %    MIJ.setRoi( [ newFurrow(:,1)'; newFurrow(:,2)'], ij.gui.Roi.POLYLINE);
+     %  MIJ.run('getLinescanRed');
+     % yRedAxisTest = MIJ.getColumn('y')
+            %MIJ.closeAllWindows
 
- end
+ %end
  
- MIJ.createImage( LinescanLinearStore)
- 
+ %MIJ.createImage( LinescanLinearStore)
+% 
 
 %%%%
  [Curvature_Furrow1] = doCalculateCurvatureAnisotropie(furrowRoi1_Sammel, 80, midFurrow1,greenImg(:,:,1),furrow1MidCoords)
@@ -355,7 +387,9 @@ hold on
  [Curvature_Furrow2] = doCalculateCurvatureAnisotropie(furrowRoi2_Sammel, 80, midFurrow2,greenImg(:,:,1),furrow2MidCoords)
  
  CurvatureMean = (Curvature_Furrow1(:,3)+Curvature_Furrow2(:,3))./2;
+ %CurvatureMean = Curvature_Furrow1(:,3);
 
+ CurvatureMeanMicron = CurvatureMean .* voxelX_mum
 
 plot(1:lastFrameToConsider,Curvature_Furrow2(:,3),'rx')
 hold on
@@ -380,6 +414,33 @@ plot(1:lastFrameToConsider,CurvatureMean,'rx')
  
  
  
+          saveVariables = {};
  
+            saveVariables{1} = FWHM_Store';
+            saveVariables{2} = maxDistance_Store';
+          
+            
+            saveVariables{3} =  euclidianDistanceFurrow';
+             saveVariables{4} =  CurvatureMeanMicron;
+           
+           
+            
+            
+       %     clear csvData;
+       %     csvData=saveVariables;
+   % header= ['1,2,3,4,5,6,7,8,9,10,11,12,13,14'];
+        %    header= ['FWHM ,FurrowZoneDiameter, Curvature]';
+            
+         %   outid = fopen('CurvatureZoneDiameter.csv.csv', 'w+');
+
+          %  fprintf(outid, '%s', header);
+          %  fclose(outid);
+          %  dlmwrite ('CurvatureZoneDiameter.csv',csvData,'roffset',1,'-append')
+            
+ 
+       saveFilename = [tifFilename,'save.mat'];
+            
+            save(saveFilename)
+            
  
  
