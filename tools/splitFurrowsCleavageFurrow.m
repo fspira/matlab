@@ -120,17 +120,18 @@ function [xCoord,yCoord,subRegionIntersect,selectedRoi] = splitFurrows(L2,x,y,bo
       %%%%%%% subroi. The resulting value will be the center pixel of the
       %%%%%%% ingressing furrow and also the pole
      % MIJ.closeAllWindows
-        MIJ.createImage(L3(:,:));
-         MIJ.run('setLine8');
+    %    MIJ.createImage(L3(:,:));
+    %     MIJ.run('setLine8');
     %  MIJ.setRoi( [ boundaryRoi(300:350,1)';  boundaryRoi(300:350,2)'], ij.gui.Roi.POLYLINE);
-      MIJ.setRoi( [ selectedRoi(:,1)'; selectedRoi(:,2)'], ij.gui.Roi.POLYLINE);
-      MIJ.run('getLinescanRed');
-      yRedAxis1 = MIJ.getColumn('y');
-      xRedAxis1 = MIJ.getColumn('x');
+    %  MIJ.setRoi( [ selectedRoi(:,1)'; selectedRoi(:,2)'], ij.gui.Roi.POLYLINE);
+    %  MIJ.run('getLinescanRed');
+    %  yRedAxis1 = MIJ.getColumn('y');
+    %  xRedAxis1 = MIJ.getColumn('x');
        %  MIJ.run('closeAllWindows');
-       MIJ.run('closeResultsWindow')
-         MIJ.closeAllWindows
-         subRegionIntersect = find(yRedAxis1==max(yRedAxis1))
+    %   MIJ.run('closeResultsWindow')
+    %     MIJ.closeAllWindows
+    %     subRegionIntersect = find(yRedAxis1==max(yRedAxis1))
+    subRegionIntersect = 150;
          xCoord = selectedRoi(subRegionIntersect,2);
          yCoord = selectedRoi(subRegionIntersect,1);
          
