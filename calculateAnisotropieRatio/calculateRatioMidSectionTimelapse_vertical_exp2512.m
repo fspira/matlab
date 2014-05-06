@@ -31,19 +31,19 @@ addpath('/Users/spira/Desktop/programme/staging')
 addpath('/Users/spira/Desktop/programme/tools')
 
 
-anaOnset = 1;
-ingressionFrame = 8;
-lastFrameToConsider = 8;
+anaOnset =17;
+ingressionFrame = 22;
+lastFrameToConsider = 26;
 
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell1_H2B_mRFP_SiRActin_Blebbistatin75muM_vertical.lsm';
+tifFilename = 'cell6_H2B_mRFP_SiRActin_Blebbistatin75muM_vertical.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell1_H2B_mRFP_SiRActin_Blebbistatin75muM';
+saveFileName = 'ccell6_H2B_mRFP_SiRActin_Blebbistatin75muM_vertical';
 
 %load('ratioAnisoParameters.mat')
 
@@ -115,13 +115,25 @@ img = cat(3,imgOrig.data);
 %p=1
 
 %%%%% multi file tiff
-planeSelector = 2;
-for lauf = 1:p/2
+planeSelector = 1;
+
+
+for lauf = 1:p
+    
+    
+
+    imgOrigGreenTmp = img(:,:,(lauf));
+    imgOrigGreen(:,:,lauf) = imgOrigGreenTmp{3};
+    
+    
+    imgOrigRedTmp = img(:,:,(lauf));
+    imgOrigRed(:,:,lauf) = imgOrigRedTmp{4};
    
-    imgOrigGreen(:,:,lauf) = img{:,3,planeSelector};
-    imgOrigRed(:,:,lauf) = img{:,4,planeSelector};
-    imgMid(:,:,lauf) = img{:,1,planeSelector};
-     planeSelector = planeSelector +2
+     
+    imgMidTmp = img(:,:,(lauf));
+    imgMid(:,:,lauf) = imgMidTmp{1};
+    
+    %planeSelector = planeSelector +2
     
 end
 
@@ -141,14 +153,19 @@ for lauf =1 :p
     imgMerge(:,:,:,lauf) = greenStackRGB(:,:,:,lauf) + redStackRGB(:,:,:,lauf)+blueStackRGB(:,:,:,lauf);
 end
 zSectionToAnalyze = 1;
-[redImg greenImg] = bkgCorrectionRedGreenExt(redImg, greenImg,zSectionToAnalyze);
+
+greenNorm = greenImg;
+redNorm = redImg;
+
+%%% Because floating crystals in the background not measured
+%[redImg greenImg] = bkgCorrectionRedGreenExt(redImg, greenImg,zSectionToAnalyze);
 
 %%%%% Setting negative values to small values, to avoid division through zero
-greenNormZero = greenImg > 0;
-greenNorm = double((greenImg .* uint32(greenNormZero)));
+%greenNormZero = greenImg > 0;
+%greenNorm = double((greenImg .* uint32(greenNormZero)));
 
-redNormZero = redImg > 0;
-redNorm = double(redImg .* uint32(redNormZero));
+%redNormZero = redImg > 0;
+%redNorm = double(redImg .* uint32(redNormZero));
 
 %%%%% change directory
 cd ([curdir '/' folderName]);
@@ -163,7 +180,7 @@ D=((S1-1.079.*S2)./(S1+(2*1.079).*S2)).*255;
 D(~isfinite(D)) = 0;
 D_Anisotropie = D;
 
-[verticalComponent, horizontalComponent, dSum] = doVisualizeSPComponents(D,tifFilename);
+%[verticalComponent, horizontalComponent, dSum] = doVisualizeSPComponents(D,tifFilename);
 
 
 %%%%%% normalize to mean itensity of each channel
@@ -207,7 +224,7 @@ S2 = S2Norm;
 %MIJ.createImage(greenImg);
 
 
-for lauf = 1:p
+for lauf = 18:p
         
         analysisFrame = zSectionToAnalyze;
 

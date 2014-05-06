@@ -31,19 +31,19 @@ addpath('/Users/spira/Desktop/programme/staging')
 addpath('/Users/spira/Desktop/programme/tools')
 
 
-anaOnset = 1;
-ingressionFrame = 8;
-lastFrameToConsider = 8;
+anaOnset =4;
+ingressionFrame = 22;
+lastFrameToConsider = 26;
 
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell1_H2B_mRFP_SiRActin_Blebbistatin75muM_vertical.lsm';
+tifFilename = 'cell5_H2B_mRFP_SiRActin_Blebbistatin75muM_vertical.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell1_H2B_mRFP_SiRActin_Blebbistatin75muM';
+saveFileName = 'cell5_H2B_mRFP_SiRActin_Blebbistatin75muM_CR';
 
 %load('ratioAnisoParameters.mat')
 
@@ -115,13 +115,25 @@ img = cat(3,imgOrig.data);
 %p=1
 
 %%%%% multi file tiff
-planeSelector = 2;
-for lauf = 1:p/2
+planeSelector = 1;
+
+
+for lauf = 1:p
+    
+    
+
+    imgOrigGreenTmp = img(:,:,(lauf));
+    imgOrigGreen(:,:,lauf) = imgOrigGreenTmp{3};
+    
+    
+    imgOrigRedTmp = img(:,:,(lauf));
+    imgOrigRed(:,:,lauf) = imgOrigRedTmp{4};
    
-    imgOrigGreen(:,:,lauf) = img{:,3,planeSelector};
-    imgOrigRed(:,:,lauf) = img{:,4,planeSelector};
-    imgMid(:,:,lauf) = img{:,1,planeSelector};
-     planeSelector = planeSelector +2
+     
+    imgMidTmp = img(:,:,(lauf));
+    imgMid(:,:,lauf) = imgMidTmp{1};
+    
+    %planeSelector = planeSelector +2
     
 end
 
@@ -141,14 +153,19 @@ for lauf =1 :p
     imgMerge(:,:,:,lauf) = greenStackRGB(:,:,:,lauf) + redStackRGB(:,:,:,lauf)+blueStackRGB(:,:,:,lauf);
 end
 zSectionToAnalyze = 1;
-[redImg greenImg] = bkgCorrectionRedGreenExt(redImg, greenImg,zSectionToAnalyze);
+
+greenNorm = greenImg;
+redNorm = redImg;
+
+%%% Because floating crystals in the background not measured
+%[redImg greenImg] = bkgCorrectionRedGreenExt(redImg, greenImg,zSectionToAnalyze);
 
 %%%%% Setting negative values to small values, to avoid division through zero
-greenNormZero = greenImg > 0;
-greenNorm = double((greenImg .* uint32(greenNormZero)));
+%greenNormZero = greenImg > 0;
+%greenNorm = double((greenImg .* uint32(greenNormZero)));
 
-redNormZero = redImg > 0;
-redNorm = double(redImg .* uint32(redNormZero));
+%redNormZero = redImg > 0;
+%redNorm = double(redImg .* uint32(redNormZero));
 
 %%%%% change directory
 cd ([curdir '/' folderName]);
@@ -159,11 +176,7 @@ workdir = pwd;
 S1 = greenNorm;
 S2 = redNorm;
 
-D=((S1-1.079.*S2)./(S1+(2*1.079).*S2)).*255;
-D(~isfinite(D)) = 0;
-D_Anisotropie = D;
-
-[verticalComponent, horizontalComponent, dSum] = doVisualizeSPComponents(D,tifFilename);
+%[verticalComponent, horizontalComponent, dSum] = doVisualizeSPComponents(D,tifFilename);
 
 
 %%%%%% normalize to mean itensity of each channel
@@ -205,9 +218,9 @@ S2 = S2Norm;
 
 %Miji;
 %MIJ.createImage(greenImg);
+[m n k p] = size(imgMerge);
 
-
-for lauf = 1:p
+for lauf = 7:p
         
         analysisFrame = zSectionToAnalyze;
 
@@ -261,35 +274,7 @@ for lauf = 1:p
         x = x_Out{3};
         y = y_Out{3};
        
-       xPole1{lauf} = x;
-       yPole{lauf} = y;
-       
-       [Pole1, Pole1_S1, Pole1_S2] = doCalculateRatioBoundingBox(ratio,BWHor, BW_Box, S1(:,:,lauf), S2(:,:,lauf))
-
-        
-
-        Pole1_BW_BoxStore{lauf} = BW_Box;
-        Pole1_BWHor_BoxStore{lauf} = BWHor;
-        Pole1_BWVer_BoxStore{lauf} = BWVer;
-        
-        
-         BW_Box = BW_Box_Out{4};
-        BWHor = BWHor_Out{4};
-        BWVer  =BWVer_Out{4};
-        
-        x = x_Out{4};
-        y = y_Out{4};
-
-    %    [BW_Box BWHor BWVer x y] = doDrawAnalysisBox(imgMerge(:,:,:,lauf),analysisFrame,ratio,voxelX_mum);
-        [Pole2, Pole2_S1, Pole2_S2] = doCalculateRatioBoundingBox(ratio,BWHor, BW_Box,S1(:,:,lauf), S2(:,:,lauf))
-
-        xPole2{lauf} = x;
-        yPole2{lauf} = y;
-
-        Pole2_BW_BoxStore{lauf} = BW_Box;
-        Pole2_BWHor_BoxStore{lauf} = BWHor;
-        Pole2_BWVer_BoxStore{lauf} = BWVer;
-    
+      
         Furrow1Store{lauf} = Furrow1
         Furrow2Store{lauf} = Furrow2
         FurrowMeanIntensity{lauf} = (Furrow1+Furrow2)/2;
@@ -306,30 +291,14 @@ for lauf = 1:p
          Furrow_S1_RawMeanStore(lauf) = (Furrow2_S1 + Furrow1_S1)/2
          Furrow_S2_RawMeanStore(lauf) = (Furrow2_S2 + Furrow1_S2)/2
 
-        Pole1Raw_S1_Store(lauf) = Pole1_S1
-        Pole1Raw_S2_Store(lauf) = Pole1_S2
-
-        Pole2Raw_S1_Store(lauf) = Pole2_S1
-        Pole2Raw_S2_Store(lauf) = Pole2_S2
-
-        PoleRawMeanStore(lauf) = (Pole1_S1 + Pole1_S2)/2
-         
-        Pole_S1_RawMeanStore(lauf) = (Pole1_S1 + Pole1_S2)/2
-        Pole_S2_RawMeanStore(lauf) = (Pole1_S2 + Pole1_S2)/2
-
-
-        
-        Pole1Store{lauf} = Pole1
-        Pole2Store{lauf} = Pole2
-        PoleMeanIntensity{lauf}= (Pole1+Pole2)/2;
+       
 
         ratioFurrow = (Furrow1+Furrow2)/2;
 
-        ratioPole = (Pole1+Pole2)/2;
+  
 
         ratioFurrowStore{lauf} = ratioFurrow
-        ratioPoleStore{lauf} = ratioPole
-        
+       
         
         contractileRingDistance{lauf} = (pdist2([xFurrow1{lauf},yFurrow1{lauf}],[xFurrow2{lauf},yFurrow2{lauf}])) * voxelX_mum
 
@@ -348,17 +317,13 @@ anaTime = 0;
             
 timeVec = timeVec-timeVec(anaOnset);
     
-ingressionTime = timeVec(ingressionFrame);
+%ingressionTime = timeVec(ingressionFrame);
              
 
 for lauf = 1:p
 
     contractileRingDistanceTmp(lauf) = contractileRingDistance{lauf};
-    ratioFurrowStoreTmp(lauf) =  ratioFurrowStore{lauf}
-    ratioPoleStoreTmp(lauf) = ratioPoleStore{lauf}
-    FurrowMeanIntensityTmp(lauf) = FurrowMeanIntensity{lauf}
-    PoleMeanIntensityTmp(lauf) = PoleMeanIntensity{lauf}
-
+  
 end
 
 %%%%%%% Plot contractile ring diameter
@@ -369,7 +334,7 @@ hold on
 
 axis([timeVec(1) 500 0 25])  
 yL = get(gca,'YLim');
-line([ingressionTime ingressionTime],yL,'Color','r');
+%line([ingressionTime ingressionTime],yL,'Color','r');
 
  
 xlabel ('Time [s]','FontSize', 16);
@@ -380,124 +345,25 @@ print(h,'-dpdf', [tifFilename,'_FurrowIngressionDiameter.pdf']);%tifCurvetifFile
 
 close all
 
-%%%%%% plot ratio intensities
 
-h=figure
-
- plot(timeVec, FurrowMeanIntensityTmp,'-r')
- hold on
-  plot(timeVec, PoleMeanIntensityTmp,'-b')
-
-axis([timeVec(1) 500 0.7 1.6])   
-
-yL = get(gca,'YLim');
-line([ingressionTime ingressionTime],yL,'Color','r');
-
-
-legend('ratio furrow', ...
-  'ratio pole')
-
-
-xlabel ('Time [s]','FontSize', 16);
-ylabel('Ratio [A.U.]','FontSize', 16);
-title(['Ratio green/red furrow and pole' tifFilename],'FontSize', 16);
-
-print(h,'-dpdf', [tifFilename,'_ratioFurrowPole.pdf']);%tifCurvetifFilename);
-
-
-close all
-
-%%%%%% Plot raw intensities
-
-
-h = figure
-
-
- plot(timeVec, FurrowRawMeanStore,'-r')
- hold on
-  plot(timeVec,PoleRawMeanStore,'-b')
-
-axis([timeVec(1) 500 0 1400])   
-
-  
-yL = get(gca,'YLim');
-line([ingressionTime ingressionTime],yL,'Color','r');
-
-
-legend('raw furrow', ...
-  'raw pole')
-
-
-xlabel ('Time [s]','FontSize', 16);
-ylabel('Raw inensities [A.U.]','FontSize', 16);
-title(['Intensities furrow and pole' tifFilename],'FontSize', 16);
-
-print(h,'-dpdf', [tifFilename,'_rawFurrowPole.pdf']);%tifCurvetifFilename);
-
-
-close all
-
-
-
-% 
-%     
-% x1 = timeVec;
-% y1 = contractileRingDistance;
-% y2 = FurrowMeanIntensityTmp;
-% y3 = PoleMeanIntensityTmp;
-% y4 = FurrowRawMeanStore;
-% y5 = PoleRawMeanStore;
-% 
-% h= figure
-% [AX,H1,H2] = plotyy(x1,y2,x1,y3,x1,y4, 'plot');
-%   
-%   set(get(AX(1),'Ylabel'),'String','Distance [µm]','FontSize', 16) 
-%  %  set(get(AX(1),'Ylabel'),'String','Distance [µm]','FontSize', 16) 
-%   set(get(AX(2),'Ylabel'),'String','Normalized mean intensity [A.U.]','FontSize', 16) 
-%        
-% hold(AX(1), 'on')
-% hold(AX(2), 'on')
-% %timeActinin, ActininAna
-% % Plot the third curve
-% h3 = plot(timeMRLC,LifeactAna,'r', 'Parent', AX(2));
-% h4 = plot(timeMRLC,MRLCAna,'c', 'Parent', AX(2));   
-% h5 = plot(timeRhoA,RhoAAna,'b', 'Parent', AX(2));
-% h5 = plot(timeActinin(1:36), ActininAna(1:36),'g', 'Parent', AX(2)); 
-% 
-% 
-%             yL = get(gca,'YLim');
-%             line([120 120],yL,'Color','r');
-%             line([250 250],yL,'Color','r');
-
-  
-  
-  
 
       saveVariables = {};
 
             saveVariables{1} = timeVec';%time{1};
             saveVariables{2} = contractileRingDistanceTmp';
             
-            
-            saveVariables{3} = ratioFurrowStoreTmp';
-            saveVariables{4} = ratioPoleStoreTmp';
-            saveVariables{5} = FurrowMeanIntensityTmp'
-            saveVariables{6} = PoleMeanIntensityTmp';
-            saveVariables{7} = FurrowRawMeanStore';
-            saveVariables{8} = PoleRawMeanStore';
-            
-            
+          
             clear csvData;
             csvData=saveVariables;
     
-            header= ['time, contractile_ring_distance, ratio_furrow, ratio_pole',...
-                'furrow_mean_intensity, pole_mean_intensity, furrow raw, pole raw'];
+            header= ['time, contractile_ring_distance'];
             
-            outid = fopen([tifFilename,'RatioAnalysis_mid.csv'], 'w+');
+            outid = fopen([tifFilename,'ContractileRingDiameter.csv'], 'w+');
 
             fprintf(outid, '%s', header);
             fclose(outid);
-            dlmwrite ([tifFilename,'RatioAnalysis_mid.csv'],csvData,'roffset',1,'-append')
+            dlmwrite ([tifFilename,'ContracitleRingDiameter.csv'],csvData,'roffset',1,'-append')
 
-           save([tifFilename,'.mat'])
+          % save([tifFilename,'.mat'])
             tifFilename
+            %contractileRingDistanceTmp
