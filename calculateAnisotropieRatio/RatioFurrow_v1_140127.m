@@ -9,7 +9,7 @@ green = zeros(256,3);
 green(:,2) = distvec;
 
 javaaddpath '/Applications/Fiji.app/scripts/Miji.m'
-javaaddpath '/Applications/Fiji.app/jars/ij-1.47b.jar'
+javaaddpath '/Applications/Fiji.app/jars/ij-1.48s.jar'
 addpath('/Applications/Fiji.app/scripts')
 
 addpath('/Applications/Fiji.app/scripts')

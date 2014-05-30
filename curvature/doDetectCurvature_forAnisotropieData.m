@@ -1,12 +1,102 @@
 %%%%%%%% Function to detect curvature of the membrane
 
 %[] = doDetermineCurvature()
-[mm nn pp] = size(cNew1Ref);
+
+
+
+distvec = linspace(0,1,256)';
+red = zeros(256,3);
+red(:,1) = distvec;
+
+green = zeros(256,3);
+green(:,2) = distvec;
+
+blue = zeros(256,3);
+blue(:,3) = distvec;
+
+
+
+
+javaaddpath '/Applications/Fiji.app/scripts/Miji.m'
+javaaddpath '/Applications/Fiji.app/jars/ij-1.48s.jar'
+
+javaaddpath '/Applications/MATLAB_R2012a_Student.app/java/mij.jar'
+
+
+addpath('/Applications/Fiji.app/scripts')
+
+addpath('/Applications/Fiji.app/plugins')
+addpath('/Users/spira/Documents/Matlab_scripte/Image_Processing_utils')
+
+addpath('/Users/spira/Documents/Matlab_scripte/tiffIO')
+addpath('/Users/spira/Documents/Matlab_scripte/')
+addpath('/Users/spira/Desktop/Desktop/LifeactCherry_GlGPIEgfp/131204')
+addpath('/Users/spira/Documents/MATLAB_scripte/ImageProcessing/Utilities')
+
+addpath('/Users/spira/Desktop/programme/calculateAnisotropieRatio')
+addpath('/Users/spira/Desktop/programme/centerOfMass')
+addpath('/Users/spira/Desktop/programme/curvature')
+addpath('/Users/spira/Desktop/programme/determineAngle')
+addpath('/Users/spira/Desktop/programme/staging')
+addpath('/Users/spira/Desktop/programme/tools')
+
+
+Miji;
+
+[m n p] = size(greenImg);
+
+
+
 
 greenStack = greenImg;
 redStack = redImg;
- furrow1_Tmp  = furrowRoi1_Sammel{lauf}
- furrow2_Tmp  = furrowRoi2_Sammel{lauf}
+
+
+%[greenStack, redStack] = bkgCorrectionRedGreen(greenStack, redStack);
+
+
+for lauf =1 :p
+
+    greenStackRGB(:,:,:,lauf) = ind2rgb(normalizedImage(greenStack(:,:,lauf)),green);
+    redStackRGB(:,:,:,lauf) = ind2rgb(normalizedImage(redStack(:,:,lauf)),red);
+             
+    imgMerge(:,:,:,lauf) = greenStackRGB(:,:,:,lauf) + redStackRGB(:,:,:,lauf);
+
+end
+
+
+    
+      [t3Store] = doAWatershedSegmentation(greenStack, redStack);
+
+
+
+for lauf = 1:p
+
+  [flank1 flank2 flankMid1 flankMid2] = doSplitWatershedInTwo(t3Store(:,:,lauf), greenStack)
+
+      flank1Store{lauf} =flank1;
+      flank2Store{lauf} = flank2;
+      flankMid1Store{lauf} = flankMid1;
+      flankMid2Store{lauf}  = flankMid2;
+end
+
+for lauf =12:p
+  [cNew1Ref rNew1Ref cNew2Ref rNew2Ref] = doGetMijiLinescan_2Linescans(imgMerge(:,:,:,lauf));
+  
+% cNew1Ref = cell2mat(cNew1Ref);
+ %rNew1Ref = cell2mat(rNew1Ref);
+ 
+ %cNew2Ref = cell2mat(cNew2Ref);
+ %rNew2Ref = cell2mat(cNew2Ref);
+  
+  
+   flank1Store{lauf}= [cNew1Ref rNew1Ref];
+   flank2Store{lauf} = [cNew2Ref rNew2Ref];
+  
+end
+
+
+  
  
  for lauf= 1:length(yFurrow2)
      rNewMid1(lauf) = round(yFurrow1{lauf});
@@ -17,18 +107,33 @@ redStack = redImg;
 
  end
 
+  [mm nn pp] = size(rNewMid1);
+
+ 
 for lauf = 1:nn
     close all
- furrow1_Tmp  = furrowRoi1_Sammel{lauf}
- furrow2_Tmp  = furrowRoi2_Sammel{lauf}
+ furrow1_Tmp  = flank1Store{lauf}
+ furrow2_Tmp  = flank2Store{lauf}
  
+
+ className = class(furrow1_Tmp);
+ 
+ if strcmp(className ,'double')
+    runningSplineA_x = furrow1_Tmp(:,1);
+    runningSplineA_y = furrow1_Tmp(:,2);
+
+    runningSplineB_x =  furrow2_Tmp(:,1);
+    runningSplineB_y =  furrow2_Tmp(:,2);
     
-runningSplineA_x = furrow1_Tmp(:,1);
-runningSplineA_y = furrow1_Tmp(:,2);
+ else
 
-runningSplineB_x =  furrow2_Tmp(:,1);
-runningSplineB_y =  furrow2_Tmp(:,2);
+    runningSplineA_x = furrow1_Tmp{:,1};
+    runningSplineA_y = furrow1_Tmp{:,2};
 
+    runningSplineB_x =  furrow2_Tmp{:,1};
+    runningSplineB_y =  furrow2_Tmp{:,2};
+
+ end
 %%%% identifies the central region of the spline
 %center =   redMax1(lauf)
 tmp1 = greenStack(:,:,1);
@@ -40,7 +145,7 @@ tmp = greenStack(:,:,1);
 tmp(:,:) = 0;
 imshow(tmp1)
 hold on
-line(runningSplineB_x,runningSplineB_y)
+line(runningSplineA_x,runningSplineA_y)
 
 plot(cNewMid1(lauf),rNewMid1(lauf),'xb')
 plot(cNewMid2(lauf),rNewMid2(lauf),'xr')
@@ -150,8 +255,8 @@ Y1 = splineXY(:,2);
 
 
 
-for subrun = 1:length(runningSplineA_x)
-    tmpSpline(round(runningSplineA_y(subrun)),round(runningSplineA_x(subrun))) = 125;
+for subrun = 1:length(X1)
+    tmpSpline(round(Y1(subrun)),round(X1(subrun))) = 125;
 
 end
 imshow(tmpSpline,[])
@@ -303,8 +408,8 @@ Y1 = splineXY(:,2);
 
 
 
-for subrun = 1:length(runningSplineB_x)
-    tmpSpline(round(runningSplineB_y(subrun)),round(runningSplineB_x(subrun))) = 125;
+for subrun = 1:length(X1)
+    tmpSpline(round(Y1(subrun)),round(X1(subrun))) = 125;
 
 end
 imshow(tmpSpline)
@@ -439,62 +544,118 @@ lauf
 end
  
 
-[Curvature] = doCalculateCurvatureAnisotropie(furrowRoi1_Sammel, slidingWindowSet, midFurrow1,greenStack)
+for lauf = 1:nn
+
+     midFurrow1(lauf,:) = [cInterStore1(lauf) rInterStore1(lauf)];
+     midFurrow2(lauf,:) = [cInterStore2(lauf) rInterStore2(lauf)];
+     
+     furrowRoi1_Sammel{lauf} = [SplineYStore_1{:,lauf}  SplineXStore_1{:,lauf}]
+     furrowRoi2_Sammel{lauf} = [SplineYStore_2{:,lauf}  SplineXStore_2{:,lauf}]
 
 
+end
 
+slidingWindowSet = 40;
+lauf = 2
+
+for lauf = 18:nn
+    slidingWindowSet = 40;
+
+
+    [Curvature,tmpMerge] = doCalculateCurvatureAnisotropie(furrowRoi1_Sammel(lauf), slidingWindowSet, midFurrow1(lauf,1:2),midFurrow2(lauf,1:2),greenStack(:,:,lauf),green,red,0);
+
+    
+    
+    tmpMergeSammel_A(:,:,:,lauf) = tmpMerge;
+    CurvatureSammel_A{lauf} = Curvature;
+    slidingWindowSet = 40;
+
+    [Curvature,tmpMerge,InterSpline_Store] = doCalculateCurvatureAnisotropie(furrowRoi2_Sammel(lauf), slidingWindowSet, midFurrow2(lauf,1:2),midFurrow1(lauf,1:2),greenStack(:,:,lauf),green,red,0);
+
+    
+    tmpMergeSammel_B(:,:,:,lauf) = tmpMerge;
+    CurvatureSammel_B{lauf} = Curvature;
+    InterSpline_Store_Sammel{lauf} = InterSpline_Store;
+
+end
+
+tmpMergeMerge = tmpMergeSammel_A + tmpMergeSammel_B;
+
+for lauf = 1:nn
+   
+    %imshow(imgMerge(:,:,:,lauf),[])
+    imshow(tmpMergeMerge(:,:,:,lauf),[])
+    
+    pause(0.1)
+    
+    
+end
 
 L2 = greenStack(:,:,1);
 L2(:,:) = 0;
 for lauf = 1:nn
     
     
-  imshow(L2,[])
+  %imshow(L2,[])
+   imshow(tmpMergeMerge(:,:,:,lauf),[])
     hold on
  %line(SplineYStore_1{lauf},  SplineXStore_1{lauf})
- splineStoreTmp = splineStoreA{lauf}
- line(splineStoreTmp(:,2),splineStoreTmp(:,1))
-  % plot(flank1Store{:lauf},flank1Store{lauf}, 'b', 'LineWidth', 2)
+ splineStoreTmpA =  furrowRoi1_Sammel{:,lauf};
+ splineStoreTmpB =  furrowRoi2_Sammel{:,lauf};
+ 
+ %line(splineStoreTmpA(:,1),splineStoreTmpA(:,2),'LineWidth',2,'Color','r')
+ %line(splineStoreTmpB(:,1),splineStoreTmpB(:,2),'LineWidth',2,'Color','r')
+ % plot(flank1Store{:lauf},flank1Store{lauf}, 'b', 'LineWidth', 2)
   
-  circleTmp =Curvature{lauf}
+  circleTmpA =CurvatureSammel_A{lauf}
+  circleTmpB =CurvatureSammel_B{lauf}
   
-  %circle(circleTmp(2),circleTmp(1),circleTmp(3))
+  %circle(circleTmpA(1),circleTmpA(2),circleTmpA(3))
   
- centerTmp =  InterSplineAStore{lauf}
+ % circle(circleTmpB(1),circleTmpB(2),circleTmpB(3))
+  
+  
+  
+% centerTmp =  InterSplineAStore{lauf}
   
   %  plot( cNew1Ref{lauf}, rNew1Ref{lauf}, 'g', 'LineWidth', 2)
-    plot(centerTmp(:,1),centerTmp(:,2) ,'xr')
+ %   plot(centerTmp(:,2),centerTmp(:,1) ,'xr')
     
     pause(0.2)
      %title(['MMLCII-B Furrow Region:' tifFilename],'FontSize', 20);
-   % mov(lauf) = getframe(gcf);
+    mov(lauf) = getframe(gcf);
      hold off
      
-     radiusSammel(lauf) = circleTmp(3)
+     radiusSammelA(lauf) = circleTmp(3)
+     radiusSammelB(lauf) = circleTmp(3)
 end
 
-plot(1:lastFrameToConsider,radiusSammel,'x')
-hold on
+close(gcf)
 
-x1 = [1:lastFrameToConsider]';
-x2 = radiusSammel'
-k=10
+movie2avi(mov, 'AnalysisROI.avi', 'compression','None', 'fps',10,'quality',100);
 
-[p,S,mu] = polyfit(x1, x2, k);
+
+%plot(1:lastFrameToConsider,radiusSammel,'x')
+%hold on
+
+%x1 = [1:lastFrameToConsider]';
+%x2 = radiusSammel'
+%k=10
+
+%[p,S,mu] = polyfit(x1, x2, k);
     
     %%%%% Test the model by evaluating test data. The test data is real
     %%%%% measured data
     %%%%% Predicted time line is the fitted curve. Data points for staging
     %%%%% will be compared against this time line.
-    predicted_Curvature = polyval(p, x2); 
-    
-    plot(1:lastFrameToConsider,predicted_Curvature,'-')
+   % predicted_Curvature = polyval(p, x2); 
+  %  
+   % plot(1:lastFrameToConsider,predicted_Curvature,'-')
 
 
-close(gcf)
+
 
 %# save as AVI file, and open it using system video player
-movie2avi(mov, 'Ellipse.avi', 'compression','None', 'fps',10);
  
 cNewMid1(lauf), rNewMid1(lauf)
 

@@ -19,14 +19,17 @@ function [xCoord,yCoord,subRegionIntersect,selectedRoi] = splitFurrows(L2,x,y,bo
 %cNewStore1 = cNew1Ref;
 %rNewStore1 = rNew1Ref;
 
-%cNew1Ref = cNewStore;
-%rNew1Ref = rNewStore;
+%cNew1Ref = cNewStore1;
+%rNew1Ref = rNewStore1;
 
         % lauf = 1
         
         k=1;
        [px py] = doSelectEllipsePoint(cc,orientationSet ,k) 
-         px = [px cc.Centroid(1,1)]
+         px = sqrt(px^2);
+           py = sqrt(py^2);
+       px = [px cc.Centroid(1,1)]
+        
           py = [py cc.Centroid(1,2)]
           
           L2= uint8(L2).*128;
