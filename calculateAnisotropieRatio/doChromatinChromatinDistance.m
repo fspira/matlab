@@ -34,7 +34,7 @@ for lauf= 1:pp
     %plot(center(1),center(2),'x')
    
      
-    G1 = fspecial('gaussian',[75 75],25);
+    G1 = fspecial('gaussian',[55 55],15);
     imgFilter = imfilter(imgMid(:,:,lauf),G1,'same');
     BW2 = edge(imgFilter,'canny',0.7,10);
     BW2 = bwmorph(BW2,'bridge',8);
