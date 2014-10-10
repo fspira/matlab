@@ -48,35 +48,35 @@ maxSelector = midOut;
 %%% first attached to the left edge and (mean of 5 Values and subsequently
 %%% removed
 
-windowSize = 5;
+%windowSize = 5;
 
-b = (1/windowSize)*ones(1,windowSize)
-a = 1;
+%b = (1/windowSize)*ones(1,windowSize)
+%a = 1;
 
-for lauf = 1:length(linescanSelectorIn)
-    linescanTmp = linescanSelectorIn{lauf};
-    linescanTmpMean = mean(linescanTmp(1:5))
-    linescanFill(1:5) = linescanTmpMean ;
-    linescanTmp = cat(1,linescanFill',linescanTmp);
+%for lauf = 1:length(linescanSelectorIn)
+%    linescanTmp = linescanSelectorIn{lauf};
+%    linescanTmpMean = mean(linescanTmp(1:5))
+%    linescanFill(1:5) = linescanTmpMean ;
+%    linescanTmp = cat(1,linescanFill',linescanTmp);
     
-    linescanSelectorTmp = filter(b,a,linescanTmp);
-    linescanSelectorIn{lauf} = linescanSelectorTmp(6:length(linescanSelectorTmp))
+ %   linescanSelectorTmp = filter(b,a,linescanTmp);
+ %   linescanSelectorIn{lauf} = linescanSelectorTmp(6:length(linescanSelectorTmp))
     % plot(length(linescanSelectorIn{lauf}),linescanSelectorIn{lauf},'b')
-end
+%end
 
 %%%%% use a flatline background correction - the left and right 20 pixels
 %%%%% are used for correction
 
-for lauf = 1:length(linescanSelectorIn)
-     linescanTmp = linescanSelectorIn{lauf};
-    [y,yfit] = bf( linescanTmp,[1:5,length(linescanTmp)-5:length(linescanTmp)],'linear');
+%for lauf = 1:length(linescanSelectorIn)
+ %   linescanTmp = linescanSelectorIn{lauf};
+ %   [y,yfit] = bf( linescanTmp,[1:5,length(linescanTmp)-5:length(linescanTmp)],'linear');
     
-    y_Indx = y > 0;
-    yNew = y_Indx .* y;
+  %  y_Indx = y > 0;
+  %  yNew = y_Indx .* y;
 
-    linescanSelectorIn{lauf} = yNew;
+   % linescanSelectorIn{lauf} = yNew;
     
-end
+%end
 
 %for lauf = 1:length(linescanSelectorIn)
 %    plot(1:length(linescanSelectorIn{lauf}),linescanSelectorIn{lauf},'b')
@@ -91,25 +91,41 @@ end
 %%%% Detect minimum Values
 %plot(1:length(linescanSelector{lauf}), linescanSelector{lauf})
 
-for lauf = 1:length(linescanSelectorIn)
+%for lauf = 1:length(linescanSelectorIn)
 
-   linescanSelector{lauf} =  linescanSelectorIn{lauf}./(mean(yGreenNonPol1{lauf})+mean(yGreenNonPol2{lauf}) )/ 2;
+  % linescanSelector{lauf} =  linescanSelectorIn{lauf}./(mean(yGreenNonPol1{lauf})+mean(yGreenNonPol2{lauf}) )/ 2;
    
    %linescanSelector{lauf} = linescanSelector{lauf} - min(linescanSelector{lauf}); 
    
    
-end
+%end
+
+
+%for lauf = 1:length(linescanSelectorIn)
+
+ %  linescanSelector{lauf} =  linescanSelectorIn{lauf}./(mean(yRedNonPol1{lauf})+mean(yRedNonPol2{lauf}) )/ 2;
+  % linescanSelector{lauf} = linescanSelector{lauf} - min(linescanSelector{lauf}); 
+   
+   
+%end
+
+%%%%%% Normalize by subtracting a fixed value which is the average of 5 percent of the
+%%%%%% lateral data points
+
 
 
 for lauf = 1:length(linescanSelectorIn)
 
-   linescanSelector{lauf} =  linescanSelectorIn{lauf}./(mean(yRedNonPol1{lauf})+mean(yRedNonPol2{lauf}) )/ 2;
-  % linescanSelector{lauf} = linescanSelector{lauf} - min(linescanSelector{lauf}); 
-   
+   linescanSelectorTmp =  linescanSelectorIn{lauf} ;
+   averagePixel = round((length(linescanSelectorTmp)/100)*5);
+    linescanAvgLeft = linescanSelectorTmp(1:averagePixel);
+    linescanAvgRight =linescanSelectorTmp(end-averagePixel:end);
+    
+    linescanSubMean = mean((linescanAvgLeft)+mean(linescanAvgRight))/2;
+    
+  linescanSelector{lauf} = linescanSelectorIn{lauf} - linescanSubMean; 
    
 end
-
-
 
 
 %%%% Use the average of the total intensity for normalization
@@ -163,8 +179,8 @@ end
         plot(((0-maxSelector(lauf))*voxelX_mum:voxelX_mum:(length(yGreenTmp)-(maxSelector(lauf)+1))* voxelX_mum),yGreenTmp,'c')
         hold on
        plot(x_axOrig_store{lauf},y_fittedOrig_store{lauf},'r')
-          axis([-20 +20 0 1]) 
-  title('Gaussian fit to MyoII width at the cleavage furrow. 2466, SiRActin','FontSize', 16)
+          axis([-20 +20 0 120]) 
+  title('Gaussian fit to MRLIIC width at the cleavage furrow. 2466, SiRActin','FontSize', 16)
    %title('Gaussian fit to SiR width at the cleavage furrow. 2466, SiRActin','FontSize', 16)
     xlabel ('Distance [µm]','FontSize', 16);
     ylabel('Intensities [A.U.]' ,'FontSize', 16);
