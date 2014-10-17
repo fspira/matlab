@@ -1,4 +1,4 @@
-function [Curvature,tmpMerge,InterSpline_Store] = doCalculateCurvatureAnisotropie(furrowRoi1_Sammel, slidingWindowSet, midFurrow1,midFurrow2,greenStack,green,red,centerA_Force)
+function [Curvature,tmpMerge,InterSpline_Store] = doCalculateCurvatureAnisotropie(furrowRoi1_Sammel, slidingWindowSet, midFurrow1,midFurrow2,greenStack,green,red,centerA_Force,voxelX_mum)
 
 %slidingWindowSet = 40;
 
@@ -79,8 +79,76 @@ if slidingWindow/2 > length(InterSplineA_x)-centerA
     else
 end
 
-splineA_x = InterSplineA_x(centerA-(slidingWindow)/2:centerA+(slidingWindow)/2);
-splineA_y = InterSplineA_y(centerA-(slidingWindow)/2:centerA+(slidingWindow)/2);
+
+
+
+%%%%%% This part generates the sliding window by calculating the euclidian
+%%%%%% distance between pixel on the cortex. This is more accuarte than
+%%%%%% giving a fixed pixel size. Especially if it comes to over
+%%%%%% interpolation (subpixel resolution of the linescans or geometrical
+%%%%%% issues) First the euclidian distance from the center to left is
+%%%%%% calculated, then from center to right.
+idxStore=0;
+splineA_x_Euclidian_left_Store =0;
+subrun =1;
+
+
+while splineA_x_Euclidian_left_Store < (slidingWindowSet/2)
+
+     
+    if centerA-subrun < 2
+       subrun = idxStore-1;
+        splineA_x_Euclidian_left_Store = slidingWindowSet;
+        breakConditionFlag = 1
+    end
+    
+    
+    splineA_x_Euclidian_left = (pdist2([InterSplineA_x(centerA-subrun),InterSplineA_y(centerA-subrun)],[InterSplineA_x(centerA-(subrun+1)),InterSplineA_y(centerA-(subrun+1))]))*voxelX_mum
+    splineA_x_Euclidian_left_Store = splineA_x_Euclidian_left_Store + splineA_x_Euclidian_left;
+    idxStore = subrun
+    
+    
+    subrun = subrun+1;
+    
+end
+
+splineLeftEuclidian_x = InterSplineA_x(centerA-idxStore:centerA);
+splineLeftEuclidian_y = InterSplineA_y(centerA-idxStore:centerA);
+
+
+
+splineA_x_Euclidian_right_Store =0;
+subrun =1;
+idxStore=0;
+
+
+while splineA_x_Euclidian_right_Store < (slidingWindowSet/2)
+    
+    if centerA+subrun == length(InterSplineA_y)-1
+       subrun = idxStore
+        splineA_x_Euclidian_right_Store = slidingWindowSet;
+        breakConditionFlag = 1
+    end
+    
+    splineA_x_Euclidian_right = (pdist2([InterSplineA_x(centerA+(subrun+1)),InterSplineA_y(centerA+(subrun+1))],[InterSplineA_x(centerA+(subrun)),InterSplineA_y(centerA+(subrun))]))*voxelX_mum
+    splineA_x_Euclidian_right_Store = splineA_x_Euclidian_right_Store + splineA_x_Euclidian_right
+    idxStore = subrun
+    
+    subrun = subrun+1
+    
+end
+
+
+splineRightEuclidian_x = InterSplineA_x((centerA+1):centerA+idxStore);
+splineRightEuclidian_y = InterSplineA_y((centerA+1):centerA+idxStore);
+
+
+%splineA_x = InterSplineA_x(centerA-(slidingWindow)/2:centerA+(slidingWindow)/2);
+%splineA_y = InterSplineA_y(centerA-(slidingWindow)/2:centerA+(slidingWindow)/2);
+
+
+splineA_x = cat(1,splineLeftEuclidian_x,splineRightEuclidian_x)
+splineA_y = cat(1,splineLeftEuclidian_y,splineRightEuclidian_y)
 
 
 InterSplineAStore{lauf} = [InterSplineA_y(centerA), InterSplineA_x(centerA)];
