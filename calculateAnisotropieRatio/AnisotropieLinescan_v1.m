@@ -740,18 +740,6 @@ cdv = fnval(fnder(spline), t);
 quiver(cv(1,:),cv(2,:), cdv(1,:),cdv(2,:));
 
 
-
-%%%% Calculate the angle for the vector
-
-
-
-  imshow(greenOverlayStoreNorm(:,:,lauf),[])
-  hold on
-
-  
-  %%%% Correlate tanges angle with each pixel
-  flank1Tmp = flank1Store{lauf}';
-  
   for subrun= 1:length(cdv(1,:))
       
      
@@ -764,119 +752,33 @@ quiver(cv(1,:),cv(2,:), cdv(1,:),cdv(2,:));
   end
 
   
+
+%%%% Calculate the angle for the vector
+
+
+
+  imshow(greenOverlayStoreNorm(:,:,lauf),[])
+  hold on
+
+  
+  %%%% Correlate tanges angle with each pixel
+  flank1Tmp = flank1Store{lauf}';
+  
   ratioNormFlank1Tmp = ratioNormFlank1{1};
-  flankCrop1 = ratioNormFlank1Tmp(1:length(cdv(1,:)));
-plot(alphaDeg1,ratioNormFlank1Tmp(1:length(cdv(1,:))),'x')
+  flankCrop1 = ratioNormFlank1Tmp(1:length(ratioNormFlank1Tmp(1,:)-5));
+  flankCrop2 = ratioNormFlank1Tmp(1:length(ratioNormFlank2Tmp(1,:)-5));
+  
+plot(alphaDeg1New,ratioNormFlank1Tmp(1:length(ratioNormFlank1Tmp(1,:)-5)),'x')
 
-[fitresult, gof] = createFitPolyFitAngleIntensity(alphaDeg1, cvSConcTmp)
+plot(alphaDeg1New,ratioNormFlank2Tmp(1:length(ratioNormFlank1Tmp(1,:)-5)),'x')
 
-y180 = feval(fitresult,180)
 
-y0 = feval(fitresult,0)
 
-maxMean = (y180+y0)/2
+%%%%%% Generate the Fit model
 
-%%%%% Correct Intensities
-
-correctedFlank1 = {};
-correctedFlank2 = {};
-  flank1DiffFromExpected = [];
-  correctedFlank1 = []
-alphaDeg1Sammel ={}
-
-for lauf = 1:AnalysisEnd
-    
-    ratioNormFlank1Tmp = ratioNormFlank1{lauf};
-    ratioNormFlank2Tmp = ratioNormFlank2{lauf};
-    
-    I1_coords = flank1Store{lauf}';
-    I2_coords = flank2Store{lauf}';
-    
-    for subsubrun = 1:9
-        spline = cscvn(I1_coords(:,subsubrun:10:end));
-        fnplt(spline,'or',2.5); hold on
-
-        t = 1:9:max(spline.breaks);
-        cv = fnval(spline, t);
-        cdv = fnval(fnder(spline), t);
-        quiver(cv(1,:),cv(2,:), cdv(1,:),cdv(2,:));
-
-        cvSub{subsubrun} = cv;
-        cvdSub{subsubrun} = cdv;
-
-    end
-        concA = cvSub{1}
-        concB = cvSub{2}
-        concC = cvSub{3}
-        concD = cvSub{4}
-        concE = cvSub{5}
-        concF = cvSub{6}
-        concG = cvSub{7}
-        concH = cvSub{8}
-        concI = cvSub{9}
-        
-        
-        counter =1;
-        
-    for lauf = 1:length(concA)
-        
-       
-       
-        cvSConcTmp(:,counter:counter+8) = [concA(:,lauf), concB(:,lauf), concC(:,lauf),concD(:,lauf),concE(:,lauf),concF(:,lauf),concG(:,lauf),concH(:,lauf),concI(:,lauf)]
-        
-        counter = counter + 9;
-        
-    end
-    
-    
-        concA =  cvdSub{1}
-        concB =  cvdSub{2}
-        concC =  cvdSub{3}
-        concD =  cvdSub{4}
-        concE =  cvdSub{5}
-        concF =  cvdSub{6}
-        concG =  cvdSub{7}
-        concH =  cvdSub{8}
-        concI =  cvdSub{9}
-        
-        
-        counter =1;
-        
-    for lauf = 1:length(concA)
-        
-       
-       
-        cvdConcTmp(:,counter:counter+8) = [concA(:,lauf), concB(:,lauf), concC(:,lauf),concD(:,lauf),concE(:,lauf),concF(:,lauf),concG(:,lauf),concH(:,lauf),concI(:,lauf)]
-        
-        counter = counter + 9;
-        
-    end
-    
-      
-    
-    %%%%%%% Identifiy points within the spline that are present in the
-    %%%%%%% original image
-    
-    flank1Shift = flank1'
-    
-    firstIdx = find(flank1Shift(1,lauf)  == round(cvSConcTmp(1,:))) 
-    
-    secondIdx = find(flank1Shift(2,lauf) == round(cvSConcTmp(2,:)))
-    
+    I1_coords = flank1Store{1}';
+    I2_coords = flank2Store{1}';
    
-    idxCounter = 1;
-    for subrun = 1:length(firstIdx)
-        
-        newIdx = find(firstIdx(subrun) == secondIdx)
-        
-        if isempty(newIdx) ==1
-        else
-            newIdxStore(idxCounter) =  find(firstIdx(subrun) == secondIdx)
-            idxCounter = idxCounter +1;
-        end
-    
-    end
-    
     
     %%%%%%%%% Esay angle detection method by simply calcualting the angle
     %%%%%%%%% between consecuteive points
@@ -889,108 +791,161 @@ for lauf = 1:AnalysisEnd
     end
     
     
-    
-    quiver(I1_coords(1,1:end-1),I1_coords(2,1:end-1),  uNew(1,:),vNew(1,:));hold on
-    
-spline = cscvn(I1_coords);
-fnplt(spline,'or',2.5); hold on
-
-    
-    %%%%%% Calculate the angle between the individual knots
-    
     for subrun = 1:length(vNew)
     
             v1New = sqrt((vNew(1,subrun))^2 + uNew(1,subrun)^2);
-            alphaDeg1New(subrun) = acosd(uNew(1,subrun)/v1New)
+            alphaDegModel(subrun) = acosd(uNew(1,subrun)/v1New)
                 
     end
     
-    for subrun= 1:length(cvdConcTmp(1,:))
 
+[fitresult, gof] = createFitPolyFitAngleIntensity(alphaDegModel, ratioNormFlank1Tmp)
 
+y180 = feval(fitresult,180)
 
-               v1 = sqrt((cvdConcTmp(1,subrun))^2 + cvdConcTmp(2,subrun)^2);
+y0 = feval(fitresult,0)
 
-                alphaDeg1(subrun) = acosd(cvdConcTmp(1,subrun)/v1);
-               % IntenistyFlank1(subrun) = greenOverlayStoreNorm(round(cv(1,subrun)),round(cv(2,subrun)))
+maxMean = (y180+y0)/2
 
-    end
-              
-              alphaDeg1(lauf) =   alphaDeg1
-              
-    end
+%%%%% Correct Intensities
 
-    spline = cscvn(I2_coords);
-    fnplt(spline,'or',2.5); hold on
-    t = 1:1:length(spline.breaks);
-    cv = fnval(spline, t);
-    cdv = fnval(fnder(spline), t);
-    quiver(cv(1,:),cv(2,:), cdv(1,:),cdv(2,:));
+   expV_F1_Sammel = {}
+   expV_F1_Sammel = {}
+   f1_Diff = {}
+   f2_Diff = {}
+   alpha_1 = {}
+   alpha_2  ={}
+
+for lauf = 1:AnalysisEnd
+
+    
+  %%%% Correlate tanges angle with each pixel
+  flank1Tmp = flank1Store{lauf}';
+  flank2Tmp = flank2Store{lauf}';
+  
+  ratioNormFlank1Tmp = ratioNormFlank1{lauf};
+  ratioNormFlank2Tmp = ratioNormFlank2{lauf};
+  
+  flankCrop1 = ratioNormFlank1Tmp(1:length(ratioNormFlank1Tmp(:,1)-5));
+  flankCrop2 = ratioNormFlank2Tmp(1:length(ratioNormFlank2Tmp(:,1)-5));
+  
     
     
+    [expectedValues_F1,flank1DiffFromExpected_F1,alphaDeg_F1] =  doCalculateExpectedIntenisties(flank1Tmp,ratioNormFlank1Tmp,fitresult,flankCrop1);
+    [expectedValues_F2,flank1DiffFromExpected_F2,alphaDeg_F2] =  doCalculateExpectedIntenisties(flank2Tmp,ratioNormFlank2Tmp,fitresult,flankCrop2);
+
+
+   expV_F1_Sammel{lauf} = expectedValues_F1
+   expV_F2_Sammel{lauf} = expectedValues_F2
+   f1_Diff{lauf} = flank1DiffFromExpected_F1
+   f2_Diff{lauf} = flank1DiffFromExpected_F2
+   alpha_1{lauf} = alphaDeg_F1
+   alpha_2{lauf}  = alphaDeg_F2
     
-    
-      
-
-          for subrun= 1:length(cdv(1,:))
-
-
-
-           v1= sqrt((cdv(1,subrun))^2 + cdv(2,subrun)^2);
-
-            alphaDeg1(subrun) = acosd(cdv(1,subrun)/v);
-           % IntenistyFlank1(subrun) = greenOverlayStoreNorm(round(cv(1,subrun)),round(cv(2,subrun)))
-
-          end
-          
-          alphaDeg1Sammel{lauf} = alphaDeg1;
-      
-      flankCrop1 = ratioNormFlank1Tmp(1:length(cdv(1,:)));
-      falnkCrop2 = ratioNormFlank2Tmp(1:length(cdv(1,:)));
-      
-    
-        for subrun = 1:length(cdv(1,:))%length(flank1)
-
-
-            correctedFlank1(subrun) = flankCrop1(subrun) + (maxMean - feval(fitresult,alphaDeg1(subrun)))
-
-          
-            
-            flank1DiffFromExpected(subrun) =  flankCrop1(subrun) - feval(fitresult, alphaDeg1(subrun))
-
-
-        end
-        
-        
-        ratioCorrectedFlank1Sammel{lauf} = correctedFlank1;
-        flank1DiffFromExpectedSammel{lauf} =  flank1DiffFromExpected;
         
 end
 
 lauf = 9
 for lauf = 1:AnalysisEnd
-
-  alphaTmp = alphaDeg1Sammel{lauf}
+    
+    flank1Tmp =  ratioNormFlank1{lauf}
+    flank2Tmp =  ratioNormFlank1{lauf}
+    
+    
+    expectedValues_F1 = expV_F1_Sammel{lauf};
+    expectedValues_F2 = expV_F2_Sammel{lauf};
+    
+    diff_F1 = f1_Diff{lauf}
+    diff_F2 = f2_Diff{lauf}
+    
+    alpha_F1 = alpha_1{lauf};
+    alpha_F2 = alpha_2{lauf};
+    
  
-  correctedFlankTmp = ratioCorrectedFlank1Sammel{lauf};
-  flank1DiffFromExpectedSammelTmp = flank1DiffFromExpectedSammel{lauf}
+ % figure(1)
+ %plot(alphaTmp, flank1DiffFromExpectedSammelTmp ,'xb');hold on
+ %plot(alphaTmp(1:length(flank1DiffFromExpectedSammelTmp)), expectedValuesTmp(1:length(flank1DiffFromExpectedSammelTmp)),'xr')
  
- plot(alphaTmp(1:length(flank1DiffFromExpectedSammelTmp)),flank1DiffFromExpectedSammelTmp ,'x')
+ %figure(lauf)
+ %plot(1:length(expectedValues_F1), diff_F1 ,'b');hold on
+ %plot(1:length(expectedValues_F1), expectedValues_F1(1:length( expectedValues_F1)),'r');hold on
+ %plot(1:length(expectedValues_F1), flank1Tmp(1:length( expectedValues_F1)),'b')
+ 
+ 
+ figure(lauf+10)
+ %plot(1:length(expectedValues_F1), diff_F1 ,'b');hold on
+ plot(1:length(expectedValues_F2), expectedValues_F2(1:length( expectedValues_F2)),'r');hold on
+ plot(1:length(expectedValues_F2), flank2Tmp(1:length( expectedValues_F2)),'b')
+ 
  
  pause(0.2)
  
 end
 
+
+[expOut midOut] = doAverageFlanksAngleCorrected(redMax1,redMax2,expV_F1_Sammel,expV_F2_Sammel)
+[ratioMergeOut midOut] = doAverageFlanksAngleCorrected(redMax1,redMax2, ratioNormFlank1, ratioNormFlank2)
+
+
+mkdir('predictedAnisotropie')
+
+
+for lauf =1 :AnalysisEnd
+    
+    expMerge = expOut{lauf}
+     ratioMerge =ratioMergeOut{lauf}
+     
+maxDist = round(length(expMerge)/2)
+newDistanceVec = (0 - (maxDist-1):maxDist-1) *voxelX_mum
+      
+ %% Fit: 'untitled fit 1'.
+[xData, yData] = prepareCurveData(newDistanceVec,  expMerge(1:length(expMerge)) );
+
+% Set up fittype and options.
+ft = fittype( 'poly6' );
+opts = fitoptions( ft );
+opts.Lower = [-Inf -Inf -Inf -Inf -Inf -Inf -Inf];
+opts.Robust = 'LAR';
+opts.Upper = [Inf Inf Inf Inf Inf Inf Inf];
+
+% Fit model to data.
+[fitOut, gofOut] = fit( xData, yData, ft, opts );
+
+    
+ h = figure(lauf)
+ %plot(1:length(expectedValues_F1), diff_F1 ,'b');hold on
+ plot(newDistanceVec,  expMerge(1:length(expMerge)),'r');hold on
+ plot(newDistanceVec, ratioMerge(1:length(expMerge)),'b')
+ plot(fitOut)
+ 
+ 
+  
+        
+          set(gca,'FontSize',16,'FontName', 'Arial')
+     % plot(x_axOrig_store{lauf},y_fittedOrig_store{lauf},'r')
+       axis([-20 +20 0 1]) 
+  title('Predictd and calculated ansiotropie at the cleavage furorw Exp. 2433','FontSize', 16,'FontName', 'Arial')
+   %title('Gaussian fit to SiR width at the cleavage furrow. 2466, SiRActin','FontSize', 16)
+    xlabel ('Distance [µm]','FontSize', 16,'FontName', 'Arial');
+    ylabel('Normalized intensity  [A.U.]' ,'FontSize', 16,'FontName', 'Arial');
+    legend(['Expected ratio at:' num2str(timeVec(lauf)), 's'] , ['Calculated ratio at:' num2str(timeVec(lauf)), 's'])
+        pause(0.2)
+ 
+        print(h,'-dpdf', [curdir '\' ,'predictedAnisotropie' '\' , 'frame_', num2str(lauf) ,'_GaussFit_FWHM_Anisotropie.pdf']);%tifCurvetifFilename);
+    
+end
+
+
 figure(4)
-plot(alphaTmp(1:length(flank1DiffFromExpectedSammelTmp)), correctedFlankTmp, 'x')
+plot(alphaTmp, correctedFlankTmp, 'x')
    
  
  figure(5)
- plot(alphaDeg1,  correctedFlank1, 'x')
+ plot(alphaTmp,  correctedFlank1, 'x')
 
 
 figure(3)
-plot(alphaDeg, correctedFlank1,'x')
+plot(alphaTmp, correctedFlank1,'x')
 
 
 
