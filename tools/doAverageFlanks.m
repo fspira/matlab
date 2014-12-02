@@ -15,6 +15,11 @@ for subrun = 1:length(yGreen1)
     lengthAB(1) = length(greenSub1) - maxPos1
     lengthAB(2) = length(greenSub2) - maxPos2
     
+    
+    lengthAB(3) = length(redSub1) - maxPos1
+    lengthAB(4) = length(redSub2) - maxPos2
+    
+    
     maxPosVec(1) = maxPos1;
     maxPosVec(2) = maxPos2;
     

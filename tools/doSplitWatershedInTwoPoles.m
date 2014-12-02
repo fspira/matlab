@@ -58,7 +58,7 @@ xbar = cc(k).Centroid(1);
       
     
    %%%%% right
-    orientationSet  =-180;
+    orientationSet  =0;
    
    
    

@@ -1,4 +1,4 @@
-%%%%% Anisotropie Linescan
+%%%%% anisotropy Linescan
 
 
 clear all
@@ -20,6 +20,7 @@ addpath('/Users/spira/Desktop/Desktop/LifeactCherry_GlGPIEgfp/131204')
 addpath('/Users/spira/Documents/MATLAB_scripte/ImageProcessing/Utilities')
 
 addpath('/Users/spira/Desktop/programme/calculateAnisotropieRatio')
+addpath('/Users/spira/Desktop/programme/calculateanisotropyRatio')
 addpath('/Users/spira/Desktop/programme/centerOfMass')
 addpath('/Users/spira/Desktop/programme/curvature')
 addpath('/Users/spira/Desktop/programme/determineAngle')
@@ -41,19 +42,20 @@ javaaddpath '/Applications/MATLAB_R2012a_Student.app/java/ij.jar'
  MIJ.start('/Applications/Fiji.app')
 
 
-anaOnset =1;
-ingressionFrame =4;
-lastFrameToConsider =11;
+anaOnset =14;
+ingressionFrame =19;
+lastFrameToConsider =31;
+AnalysisEnd = lastFrameToConsider;
 
 curdir = pwd;
 
 %load('voxelX_mum.mat');
 %load('voxelX_mumMid');
  
-tifFilename = 'cell9_100nm_vertical.lsm';
+tifFilename = 'cell2_100nm_vertical.lsm';
 %tifFilenameMid = 'cell6_conv.tif';
 
-saveFileName = 'cell9_100nm_vertical_FlankingCenter';
+saveFileName = 'cell2_100nm_vertical_entireFlank';
 
 %load('ratioAnisoParameters.mat')
 
@@ -148,8 +150,11 @@ for lauf = 1:p/2
 end
 
 
-greenImg = double(imgOrigGreen);
-redImg = double(imgOrigRed);
+greenImg = uint16(imgOrigGreen);
+redImg = uint16(imgOrigRed);
+
+
+[greenImg redImg] = bkgCorrectionRedGreen(greenImg, redImg);
 
 [m n p] = size(greenImg);
 %%%%% create RGB image
@@ -181,7 +186,7 @@ redNorm = redImg;
 cd ([curdir '/' folderName]);
 workdir = pwd;
 
-%%%%% Calculate anisotropie
+%%%%% Calculate anisotropy
 
 S1 = greenNorm;
 S2 = redNorm;
@@ -212,9 +217,36 @@ for lauf = 1:p
     
 end
     
+%%%%%% Burn ROI's into the image
+flank1Tmp = flank1Store{5};
+flank2Tmp = flank2Store{5};
+flank1Tmp = pole1Store{5};
+flank1Tmp = pole2Store{5};
 
-for lauf = 1:p %length(imgGauss)
+templateImage = S1(:,:,5);
+templateImage(:,:) = 0;
     
+for lauf = 1:length(flank1Tmp)
+  
+    templateImage(flank1Tmp(lauf,2),flank1Tmp(lauf,1)) = 255;
+    
+end
+
+
+
+imwrite(templateImage,'splitSegment_cell9_Frame5_Pole2.tif');
+counter = 26
+for lauf = counter:AnalysisEnd
+                
+     flank1Store{lauf} = [50 50]; 
+    flank2Store{lauf} = [50 50];
+    flank1Mid(lauf) = 1
+    flank2Mid(lauf) = 1
+    
+end
+
+for lauf =1:AnalysisEnd
+    MIJ.closeAllWindows
     flank1TmpUpdate =[];
     flank2TmpUpdate =[];
     
@@ -235,7 +267,7 @@ for lauf = 1:p %length(imgGauss)
     
     %%%% To order the  segmented flanks 
     
-    if lauf == p 
+    if lauf == AnalysisEnd
         
             flank1Tmp1 = flank1Store{lauf-1};
     
@@ -288,23 +320,79 @@ for lauf = 1:p %length(imgGauss)
     MIJ.setRoi( [flank1Tmp(:,1)'; flank1Tmp(:,2)'], ij.gui.Roi.POLYLINE);
    
     k = waitforbuttonpress 
+    clear logData
+     MIJ.run('getSplineCoordinates')
+     logData = MIJ.getLog;
+     MIJ.run('closeLogWindow')
+    logDataTmp = char(logData);
+    logDataTmp1 = strread(logDataTmp, '%s');
+        
+         xLogTmp = logDataTmp1(2:4:end);
+         yLogTmp = logDataTmp1(3:4:end);
+         
+             
+        xLog = zeros(length(xLogTmp),1,'double');
+        yLog = zeros(length(yLogTmp),1,'double');
+         
+         for subrun = 1 : length(xLogTmp)
+             
+             xLog(subrun) = round(str2num(xLogTmp{subrun}));
+             yLog(subrun) = round(str2num(yLogTmp{subrun}));
+             
+         end
+         
+          flank1StoreNew{lauf} = [xLog yLog]
+    
     MIJ.run('saveMacro');
     sROI= ReadImageJROI('Roi.zip');
     tmp = sROI{:,:}.mnCoordinates;
-    flank1TmpUpdate(:,1) = tmp(:,1);
-    flank1TmpUpdate(:,2) = tmp(:,2);
+    flank1TmpUpdate(:,1) = xLog;
+    flank1TmpUpdate(:,2) = yLog;
     
     flank1Store{lauf} = [flank1TmpUpdate(:,1) flank1TmpUpdate(:,2)]
     
-    
+        
+     MIJ.createImage(redNorm(:,:,lauf));
      MIJ.setRoi( [flank2Tmp(:,1)'; flank2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
     k = waitforbuttonpress 
+     clear logData
+    
+     MIJ.run('getSplineCoordinates')
+     logData = MIJ.getLog;
+        MIJ.run('closeLogWindow')
+    logDataTmp = char(logData);
+    logDataTmp1 = strread(logDataTmp, '%s');
+        
+         xLogTmp = logDataTmp1(2:4:end);
+         yLogTmp = logDataTmp1(3:4:end);
+         
+             
+        xLog = zeros(length(xLogTmp),1,'double');
+        yLog = zeros(length(yLogTmp),1,'double');
+         
+         for subrun = 1 : length(xLogTmp)
+             
+             xLog(subrun) = round(str2num(xLogTmp{subrun}));
+             yLog(subrun) = round(str2num(yLogTmp{subrun}));
+             
+         end
+         
+          flank2StoreNew{lauf} = [xLog yLog]
+        
+    
     MIJ.run('saveMacro');
     sROI= ReadImageJROI('Roi.zip');
     tmp = sROI{:,:}.mnCoordinates;
-    flank2TmpUpdate(:,1) = tmp(:,1);
-    flank2TmpUpdate(:,2) = tmp(:,2);
+    flank2TmpUpdate(:,1) = xLog;
+    flank2TmpUpdate(:,2) = yLog;
     
+    
+    MIJ.run('saveMacro');
+    sROI= ReadImageJROI('Roi.zip');
+    tmp = sROI{:,:}.mnCoordinates;
+  %  flank2TmpUpdate(:,1) = tmp(:,1);
+  %  flank2TmpUpdate(:,2) = tmp(:,2);
+      MIJ.closeAllWindows
     flank2Store{lauf} = [flank2TmpUpdate(:,1) flank2TmpUpdate(:,2)]
     
     
@@ -313,25 +401,199 @@ for lauf = 1:p %length(imgGauss)
 
 end
 
+
+
+
+
+
 %%%%% Detect Poles
 
-
-%for lauf = 1:p
+counter = 1;
+for lauf = 1:AnalysisEnd
     
 
- %   [pole1 pole2 poleMid1 poleMid2] = doSplitWatershedInTwoPoles(t3Store(:,:,lauf), greenNorm(:,:,lauf))
+    [pole1 pole2 poleMid1 poleMid2] = doSplitWatershedInTwoPoles(t3Store(:,:,lauf), greenNorm(:,:,lauf))
 
-%    pole1Store{lauf} = pole1
-%    pole2Store{lauf} = pole2
-%    pole1Mid(lauf) = poleMid1
- %   pole2Mid(lauf) = poleMid2
+    pole1Store{lauf} = pole1
+    pole2Store{lauf} = pole2
+    pole1Mid(lauf) = poleMid1
+    pole2Mid(lauf) = poleMid2
+    counter = counter+1;
+end
+
+for lauf = counter:AnalysisEnd
     
-%end
+    
+    pole1Store{lauf} = [50 50]; 
+    pole2Store{lauf} = [50 50]; 
+     pole1Mid(lauf) = 1
+     pole2Mid(lauf) =  1
 
+end
+
+%%%%% This part orderes the segmented poles
+for lauf = 1:AnalysisEnd %length(imgGauss)
+    
+    pole1TmpUpdate =[];
+    pole2TmpUpdate =[];
+    
+    
+    pole1Tmp = pole1Store{lauf};
+    
+    pole1FirstFrame = pole1Store{1};
+
+    pole2FirstFrame = pole2Store{1};
+    
+    pole1FirstCenter = pole1Mid(1);
+    pole2FirstCenter = pole2Mid(1);
+    
+    
+   
+    
+    pole2Tmp = pole2Store{lauf};
+    
+    %%%% To order the  segmented poles 
+    
+    if lauf == AnalysisEnd
+        
+            pole1Tmp1 = pole1Store{lauf-1};
+    
+            pole2Tmp1 = pole2Store{lauf-1};
+        
+            pole1Dist = pdist2([ pole1FirstFrame(pole1FirstCenter(1),:)],[pole1Tmp(pole1Mid(lauf),:)])
+
+            pole2Dist = pdist2([ pole2FirstFrame(pole2FirstCenter(1),:)],[pole2Tmp(pole2Mid(lauf),:)])
+
+            if pole1Dist >pole2Dist
+
+                pole1Tmp = pole2Store{lauf};
+                pole2Tmp = pole1Store{lauf};
+
+                pole1MidTmp = pole1Mid(lauf)
+                pole2MidTmp = pole2Mid(lauf)
+
+                pole1Mid(lauf) = pole2MidTmp;
+                pole2Mid(lauf) = pole1MidTmp;
+
+            else
+
+            end  
+            
+
+    else
+        
+          pole1Dist = pdist2([ pole1FirstFrame(pole1FirstCenter(1),:)],[pole1Tmp(pole1Mid(lauf),:)])
+
+            pole2Dist = pdist2([ pole1FirstFrame(pole1FirstCenter(1),:)],[pole2Tmp(pole2Mid(lauf),:)])
+
+            if pole1Dist  > pole2Dist
+
+                pole1Tmp = pole2Store{lauf};
+                pole2Tmp = pole1Store{lauf};
+
+                pole1MidTmp = pole1Mid(lauf)
+                pole2MidTmp = pole2Mid(lauf)
+
+                pole1Mid(lauf) = pole2MidTmp;
+                pole2Mid(lauf) = pole1MidTmp;
+
+            else
+
+            end
+            
+    end
+    
+    MIJ.createImage(redNorm(:,:,lauf));
+    MIJ.setRoi( [pole1Tmp(:,1)'; pole1Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+   
+    k = waitforbuttonpress 
+    
+     clear logData
+     MIJ.run('getSplineCoordinates')
+     logData = MIJ.getLog;
+     MIJ.run('closeLogWindow')
+    logDataTmp = char(logData);
+    logDataTmp1 = strread(logDataTmp, '%s');
+        
+         xLogTmp = logDataTmp1(2:4:end);
+         yLogTmp = logDataTmp1(3:4:end);
+         
+             
+        xLog = zeros(length(xLogTmp),1,'double');
+        yLog = zeros(length(yLogTmp),1,'double');
+         
+         for subrun = 1 : length(xLogTmp)
+             
+             xLog(subrun) = round(str2num(xLogTmp{subrun}));
+             yLog(subrun) = round(str2num(yLogTmp{subrun}));
+             
+         end
+         
+         Pole1StoreNew{lauf} = [xLog yLog]
+    
+    
+    MIJ.run('saveMacro');
+    sROI= ReadImageJROI('Roi.zip');
+    tmp = sROI{:,:}.mnCoordinates;
+    pole1TmpUpdate(:,1) = xLog;
+    pole1TmpUpdate(:,2) = yLog;
+    
+    pole1Store{lauf} = [pole1TmpUpdate(:,1) pole1TmpUpdate(:,2)]
+    
+     MIJ.createImage(redNorm(:,:,lauf));
+     MIJ.setRoi( [pole2Tmp(:,1)'; pole2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+    k = waitforbuttonpress 
+    
+    clear logData
+     MIJ.run('getSplineCoordinates')
+     logData = MIJ.getLog;
+     MIJ.run('closeLogWindow')
+    logDataTmp = char(logData);
+    logDataTmp1 = strread(logDataTmp, '%s');
+        
+         xLogTmp = logDataTmp1(2:4:end);
+         yLogTmp = logDataTmp1(3:4:end);
+         
+             
+        xLog = zeros(length(xLogTmp),1,'double');
+        yLog = zeros(length(yLogTmp),1,'double');
+         
+         for subrun = 1 : length(xLogTmp)
+             
+             xLog(subrun) = round(str2num(xLogTmp{subrun}));
+             yLog(subrun) = round(str2num(yLogTmp{subrun}));
+             
+         end
+         
+         Pole2StoreNew{lauf} = [xLog yLog]
+    
+    
+    MIJ.run('saveMacro');
+    sROI= ReadImageJROI('Roi.zip');
+    tmp = sROI{:,:}.mnCoordinates;
+    pole2TmpUpdate(:,1) = xLog;
+    pole2TmpUpdate(:,2) = yLog;
+    
+    
+    pole2Store{lauf} = [pole2TmpUpdate(:,1) pole2TmpUpdate(:,2)]
+    
+    
+    MIJ.run('closeAllWindows');
+    lauf
+
+end
+
+
+
+%
+
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%
 %%%%% Mark the ingressing cleavage furrow
 
     
-           for lauf = 1:p %length(imgGauss)
+           for lauf = 1:AnalysisEnd %length(imgGauss)
      
       flank1Tmp = flank1Store{lauf};
       flank2Tmp = flank2Store{lauf};
@@ -368,7 +630,7 @@ end
 
            
            
-              cNewMid1 =  cNewMid1N;
+                cNewMid1 =  cNewMid1N;
                 rNewMid1 =  rNewMid1N;
                 
                 
@@ -376,9 +638,131 @@ end
                 rNewMid2 =  rNewMid2N;
 
                 
+                for lauf = 1:AnalysisEnd
                 
-AnalysisEnd = p;
+                    imshow(imgMerge(:,:,:,lauf))
+                    hold on
+                    plot(cNewMid1(lauf),rNewMid1(lauf),'xb')
+                    plot(cNewMid2(lauf),rNewMid2(lauf),'xr')
+                    pause(0.5)
+                    
+                end
+                
+         
 
+
+
+%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%
+%%%%% Mark the poles
+
+    
+           for lauf = 1:AnalysisEnd %length(imgGauss)
+     
+      flank1Tmp = pole1Store{lauf};
+      flank2Tmp = pole2Store{lauf};
+    
+    %%%%% Mark ingressing furrow
+    
+               
+
+                MIJ.createImage(imgMerge(:,:,:,lauf));
+                MIJ.run('8-bit');
+              
+               MIJ.run('Stack to RGB');
+               % MIJ.selectWindow('Import from Matlab');
+                MIJ.setRoi( [flank1Tmp(pole1Mid(lauf),1);flank1Tmp(pole1Mid(lauf),2)], ij.gui.Roi.POINT); 
+                k = waitforbuttonpress 
+                coords =    MIJ.getRoi(1);
+                cPoleMid1N(lauf) = coords(1);
+                rPoleMid1N(lauf) = coords(2);
+              
+             
+
+               MIJ.setRoi( [flank2Tmp(pole2Mid(lauf),1);flank2Tmp(pole2Mid(lauf),2)], ij.gui.Roi.POINT); 
+                     k = waitforbuttonpress 
+                coords =    MIJ.getRoi(1);
+                cPoleMid2N(lauf) = coords(1);
+                rPoleMid2N(lauf) = coords(2);
+           
+   
+    
+
+                MIJ.run('closeAllWindows');
+
+           end
+
+lauf = 5
+          templateImage = normalizedImage(S1(:,:,5));
+          
+          templateImage(rPoleMid1N(lauf),cPoleMid1N(lauf)) = 255;
+          templateImage(rPoleMid2N(lauf),cPoleMid2N(lauf)) = 255;
+          templateImage( rNewMid1(lauf), cNewMid1(lauf)) = 255;
+          templateImage( rNewMid2(lauf), cNewMid2(lauf)) = 255;
+          
+          imshow(templateImage,[])
+           
+
+
+imwrite(templateImage,'midPoints_cell9_Frame5_Pole2.tif');
+
+
+
+imwrite(BW2,'segmented_Chromatin_cell2_Frame5.tif');
+
+[cChromatin1 rChromatin1 cChromatin2 rChromatin2] = doChromatinChromatinDistance(imgMid)
+
+ chromatin1Mid =  zeros(AnalysisEnd,2);
+ 
+ chromatin2Mid = zeros(AnalysisEnd,2);
+
+for lauf = 1:AnalysisEnd
+    
+     chromatin1Mid(lauf,1:2) = [cChromatin1(lauf) rChromatin1(lauf)]
+     chromatin2Mid(lauf,1:2) = [cChromatin2(lauf) rChromatin2(lauf)]
+    
+
+end
+
+[chromatin1Mid chromatin2Mid] = doSortChromatinPositions(chromatin1Mid, chromatin2Mid, AnalysisEnd)
+
+
+cChromatin1 = chromatin1Mid(:,1);
+rChromatin1 = chromatin1Mid(:,2);
+
+cChromatin2 = chromatin2Mid(:,1);
+rChromatin2 = chromatin2Mid(:,2);
+
+
+            %%%%
+            
+            for lauf = 1:AnalysisEnd
+                
+                MIJ.createImage(imgMid(:,:,lauf));
+                MIJ.run('8-bit');
+              
+               % MIJ.selectWindow('Import from Matlab');
+                MIJ.setRoi( [cChromatin1(lauf);rChromatin1(lauf)], ij.gui.Roi.POINT); 
+                k = waitforbuttonpress 
+                coords =    MIJ.getRoi(1);
+                cChromatin1(lauf) = coords(1);
+                rChromatin1(lauf) = coords(2);
+            
+                MIJ.setRoi( [cChromatin2(lauf);rChromatin2(lauf)], ij.gui.Roi.POINT); 
+                k = waitforbuttonpress 
+                coords =    MIJ.getRoi(1);
+               cChromatin2(lauf) = coords(1);
+               rChromatin2(lauf) = coords(2);
+               
+               
+
+
+                MIJ.run('closeAllWindows');
+
+
+               
+            end
 
 %%%%%% Calculate cleavage furrow diameter
 
@@ -388,6 +772,22 @@ AnalysisEnd = p;
                    dist1 = pdist2([cNewMid1(lauf),rNewMid1(lauf)],[cNewMid2(lauf),rNewMid2(lauf)]);
                    
                    distMinIngressing(lauf) = dist1*voxelX_mum;
+                   
+                   
+                 
+              
+  end
+  
+  
+  
+%%%%%% Calculate chromatin chromatin diameter
+
+  for lauf = 1:  AnalysisEnd
+               
+            
+                   dist1 = pdist2([cChromatin1(lauf),cChromatin2(lauf)],[cChromatin2(lauf),rChromatin2(lauf)]);
+                   
+                   distChromatinChromatin(lauf) = dist1*voxelX_mum;
                    
                    
                  
@@ -422,7 +822,7 @@ AnalysisEnd = p;
            
             xlabel ('Time [s]','FontSize', 16,'FontName', 'Arial');
             ylabel('Cleavage furrow diameter [µm]','FontSize', 16,'FontName', 'Arial');
-            title(['Cleavage furrow ingression diameter Exp: 2433 ' tifFilename],'FontSize', 16,'FontName', 'Arial');
+            title(['Cleavage furrow diameter Exp: 2433 ' tifFilename],'FontSize', 16,'FontName', 'Arial');
           %  orient landscape;
             print(h,'-dpdf', [curdir '/'  tifFilename,'_CleavageFurrowDiameter.pdf']);%tifCurvetifFilename);
             close all
@@ -448,10 +848,15 @@ AnalysisEnd = p;
             dlmwrite ('CleavageDiameter.csv',csvData,'roffset',1,'-append')
             
 
-    %%%%%% Get the linescan from the curves
+    %%%%%% Generate linescan using the positions identified for flank1/2
+    %%%%%% and pole1/2
 
+    clear yRed1 xRed1 yRed2 xRed2 yGreen1 xGreen1 yGreen2 xGreen2
+    
 for lauf = 1:AnalysisEnd %length(redStack)
-         
+    
+    %%%%%% measure linescans for flanks
+    
          flank1Tmp = flank1Store{lauf};
          flank2Tmp = flank2Store{lauf};
          
@@ -459,21 +864,77 @@ for lauf = 1:AnalysisEnd %length(redStack)
          MIJ.createImage(redNorm(:,:,lauf));
          MIJ.run('setLine8');
          MIJ.setRoi( [ flank1Tmp(:,1)'; flank1Tmp(:,2)'], ij.gui.Roi.POLYLINE);
-         MIJ.run('getLinescanRed');
+         
+         
+         %%%%% Update InterpolatedLine
+          clear logData
+          MIJ.run('getSplineCoordinates')
+          logData = MIJ.getLog;
+          
+          MIJ.run('closeLogWindow')
+         
+          MIJ.run('getLinescanRed');
          yRed1{lauf} = MIJ.getColumn('y');
          xRed1{lauf} = MIJ.getColumn('x');
-         MIJ.run('closeAllWindows');
+        logDataTmp = char(logData);
+        logDataTmp1 = strread(logDataTmp, '%s');
+        
+         xLogTmp = logDataTmp1(2:4:end);
+         yLogTmp = logDataTmp1(3:4:end);
+         
+             
+        xLog = zeros(length(xLogTmp),1,'double');
+        yLog = zeros(length(yLogTmp),1,'double');
+         
+         for subrun = 1 : length(xLogTmp)
+             
+             xLog(subrun) = round(str2num(xLogTmp{subrun}));
+             yLog(subrun) = round(str2num(yLogTmp{subrun}));
+             
+         end
+         
+         flank1StoreNew{lauf} = [xLog yLog]
+       
          
          MIJ.createImage(redNorm(:,:,lauf));
          MIJ.run('setLine8');
           MIJ.setRoi( [ flank2Tmp(:,1)'; flank2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
-         MIJ.run('getLinescanRed');
-         yRed2{lauf} = MIJ.getColumn('y');
-         xRed2{lauf} = MIJ.getColumn('x');
-         MIJ.run('closeAllWindows');
          
+        
          
-         
+         %%%% Update interpolatedLine
+              clear logData
+              MIJ.run('getSplineCoordinates')
+              logData = MIJ.getLog;
+
+             MIJ.run('closeLogWindow')
+          
+            MIJ.run('getLinescanRed');
+            yRed2{lauf} = MIJ.getColumn('y');
+            xRed2{lauf} = MIJ.getColumn('x');
+            
+            
+            logDataTmp = char(logData);
+            logDataTmp1 = strread(logDataTmp, '%s');
+
+             xLogTmp = logDataTmp1(2:4:end);
+             yLogTmp = logDataTmp1(3:4:end);
+
+
+            xLog = zeros(length(xLogTmp),1,'double');
+            yLog = zeros(length(yLogTmp),1,'double');
+
+             for subrun = 1 : length(xLogTmp)
+
+                 xLog(subrun) = round(str2num(xLogTmp{subrun}));
+                 yLog(subrun) = round(str2num(yLogTmp{subrun}));
+
+             end
+
+             flank2StoreNew{lauf} = [xLog yLog]
+            
+             MIJ.run('closeAllWindows');
+          
          
          MIJ.createImage(greenNorm(:,:,lauf));
          MIJ.run('setLine8');
@@ -493,20 +954,71 @@ for lauf = 1:AnalysisEnd %length(redStack)
          
          
          
+         
+         
+         
+            %%%%%% Linescan at the poles
+%           
+%         pole1Tmp = pole1Store{lauf};
+%         pole2Tmp = pole2Store{lauf};
+%          
+%          
+%         MIJ.createImage(redNorm(:,:,lauf));
+%         MIJ.run('setLine8');
+%         MIJ.setRoi( [ pole1Tmp(:,1)'; pole1Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+%         MIJ.run('getLinescanRed');
+%         yRedPole1{lauf} = MIJ.getColumn('y');
+%         xRedPole1{lauf} = MIJ.getColumn('x');
+%         MIJ.run('closeAllWindows');
+%          
+%         MIJ.createImage(redNorm(:,:,lauf));
+%         MIJ.run('setLine8');
+%          MIJ.setRoi( [ pole2Tmp(:,1)'; pole2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+%         MIJ.run('getLinescanRed');
+%         yRedPole2{lauf} = MIJ.getColumn('y');
+%         xRedPole2{lauf} = MIJ.getColumn('x');
+%         MIJ.run('closeAllWindows');
+%          
+%          
+%          
+%          
+%         MIJ.createImage(greenNorm(:,:,lauf));
+%         MIJ.run('setLine8');
+%          MIJ.setRoi( [ pole1Tmp(:,1)'; pole1Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+%         MIJ.run('getLinescanRed');
+%         yGreenPole1{lauf} = MIJ.getColumn('y');
+%         xGreenPole1{lauf} = MIJ.getColumn('x');
+%         MIJ.run('closeAllWindows');
+%          
+%         MIJ.createImage(greenNorm(:,:,lauf));
+%         MIJ.run('setLine8');
+%          MIJ.setRoi( [ pole2Tmp(:,1)'; pole2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+%         MIJ.run('getLinescanRed');
+%         yGreenPole2{lauf} = MIJ.getColumn('y');
+%         xGreenPole2{lauf} = MIJ.getColumn('x');
+%         MIJ.run('closeAllWindows');
+         
+        
+         
 end
 
+flank1Old = flank1Store;
+flank2Old = flank2Store;
 
+flank1Store = flank1StoreNew;
+flank2Store = flank2StoreNew;
 %test = yRedMid1
 
-%%%%%%% Identification of midsections of the ROI's. The short script plots
-%%%%%%% a high pixel value into the linescan, which can be easily detected
-%%%%%%% as a peak and used to find the mid regin.
+%%%%%%% Identification of midsections of the ROI's. The following piece of
+%%%%%%% code plots high intensity pixels at the center position into the
+%%%%%%% linescan, which then can easily be detected by matlab.
 
 %Miji;
 
 for lauf=1:AnalysisEnd
     %lauf =4
     redStackMid = redNorm(:,:,lauf);
+    redStackMid(:,:) = 0;
     
     
          flank1Tmp = flank1Store{lauf};
@@ -531,10 +1043,10 @@ for lauf=1:AnalysisEnd
          
          redMax1(lauf) = find(yRedMid1{lauf}==max(yRedMid1{lauf}))
          
-         redStackMid(rMark2,cMark2) = 65000;
+         redStackMid(rMark2,cMark2) = 650000;
          MIJ.createImage(redStackMid(:,:));
          MIJ.run('setLine12');
-          MIJ.setRoi( [ flank2Tmp(:,1)'; flank2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+         MIJ.setRoi( [ flank2Tmp(:,1)'; flank2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
          MIJ.run('getLinescanRed');
          yRedMid2{lauf} = MIJ.getColumn('y');
          xRedMid2{lauf} = MIJ.getColumn('x');
@@ -542,6 +1054,44 @@ for lauf=1:AnalysisEnd
          
          redMax2(lauf) = find(yRedMid2{lauf}==max(yRedMid2{lauf}))
          
+         
+         %%%%%% Detection of the polar region
+         
+%          
+%         pole1Tmp = pole1Store{lauf};
+%         pole2Tmp = pole2Store{lauf};
+%          
+%     
+%     cMark1 = cPoleMid1N(lauf);
+%     rMark1 = rPoleMid1N(lauf);
+%     
+%     cMark2 =  cPoleMid2N(lauf);
+%     rMark2 =  rPoleMid2N(lauf);
+%        redStackMid(:,:) = 0;
+%     
+%          redStackMid(rMark1,cMark1) = 65000;
+%         MIJ.createImage(redStackMid(:,:));
+%         MIJ.run('setLine12');
+%         MIJ.setRoi( [ pole1Tmp(:,1)'; pole1Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+%         MIJ.run('getLinescanRed');
+%         yRedMidPole1{lauf} = MIJ.getColumn('y');
+%         xRedMidPole1{lauf} = MIJ.getColumn('x');
+%         MIJ.run('closeAllWindows');
+%          
+%         redMaxPole1(lauf) = find(yRedMidPole1{lauf}==max(yRedMidPole1{lauf}))
+%          
+%         redStackMid(rMark2,cMark2) = 65000;
+%         MIJ.createImage(redStackMid(:,:));
+%         MIJ.run('setLine12');
+%         MIJ.setRoi( [ pole2Tmp(:,1)'; pole2Tmp(:,2)'], ij.gui.Roi.POLYLINE);
+%         MIJ.run('getLinescanRed');
+%         yRedMidPole2{lauf} = MIJ.getColumn('y');
+%         xRedMidPole2{lauf} = MIJ.getColumn('x');
+%         MIJ.run('closeAllWindows');
+%          
+%        redMaxPole2(lauf) = find(yRedMidPole2{lauf}==max(yRedMidPole2{lauf}))
+%          
+%          
          
        
 
@@ -554,6 +1104,9 @@ for lauf = 1:AnalysisEnd
     
     ratioFurrow1{lauf} = yGreen1{lauf}./yRed1{lauf};
     ratioFurrow2{lauf} = yGreen2{lauf}./yRed2{lauf};
+    %ratioPole1{lauf} = yGreenPole1{lauf}./ yRedPole1{lauf};
+    %ratioPole2{lauf} = yGreenPole2{lauf}./ yRedPole2{lauf};
+
 
 
 end
@@ -564,43 +1117,63 @@ end
 [greenOut redOut midOut] = doAverageFlanks(redMax1,redMax2,yGreen1,yGreen2,yRed1,yRed2)
 
 
+[greenOutPole redOutPole midOutPole] = doAverageFlanks(redMaxPole1,redMaxPole2,yGreenPole1,yGreenPole2,yRedPole1,yRedPole2)
+
+
 %%%% Normalize between 0 and 1
 
 for lauf = 1:AnalysisEnd
     
     ratioFurrow1Merged{lauf} = greenOut{lauf}./redOut{lauf};
+   %ratioPoleMerged{lauf} = greenOutPole{lauf}./redOutPole{lauf};
    
 
 
 end
 
 
-    ratioTmp = ratioFurrow1Merged{1}
-    ratioFurrowMean = mean(ratioTmp(150-10:150+10))
-    ratioPoleMean = mean(ratioTmp(270-10:270+10))
+    ratioTmp = ratioFurrow1Merged{16}
+    ratioFurrowMean = mean(ratioTmp(redMax1(16)-10:redMax1(16)+10))
+  
     
+   
+ %   ratioPoleMean = mean(ratioTmp(220-10:220+10))
     
+    redMaxPole2 = 125;
+    
+  ratioTmpPole = ratioPoleMerged{1}
+  ratioPoleMean = mean(ratioTmp(260-10:260+10))
+
+    
+    %%%%% Normalize images between min and max - relative to the first
+    %%%%% frame. Min intensities are seen at the ingressing cleavage furrow
+    %%%%% and max intensities at the poles
 
 for lauf =1 :AnalysisEnd
     
     ratioTmp = ratioFurrow1Merged{lauf}
     ratioNorm = ((ratioTmp- ratioFurrowMean)/(ratioPoleMean- ratioFurrowMean)) 
+ %    ratioTmpPole = ratioPoleMerged{lauf}
+  %  ratioNormPole = ((ratioTmpPole- ratioFurrowMean)/(ratioPoleMean- ratioFurrowMean)) 
     
     
 end
 
 
-
-    ratioTmp1 = ratioFurrow1{1}
-    ratioTmp2 = ratioFurrow1{1}
-   % ratioFurrowMean1 = mean(ratioTmp1(150-10:150+10))
-    %ratioPoleMean1 = mean(ratioTmp1(270-10:270+10))
-    %ratioFurrowMean2 = mean(ratioTmp2(150-10:150+10))
-    %ratioPoleMean2 = mean(ratioTmp2(270-10:270+10))
+%%%%%% Caculations for the furrow
+    ratioTmp1 = ratioFurrow1{16}
+    ratioTmp2 = ratioFurrow1{16}
+    
+  %  ratioTmpPole1 = ratioPole1{1}
+  %  ratioTmpPole2 = ratioPole2{1}
+   
     ratioFurrowMean1 = min(ratioTmp1)
     ratioFurrowMean2= min(ratioTmp2)
     ratioPoleMean1 = max(ratioTmp1)
-    ratioPoleMean2 = max(ratioTmp2)
+    ratioPoleMean2 = max(ratioTmp1)%%%%% has to be changed to pole for the final version
+   
+  
+    
     
 ratioNorm = {}
 ratioNormFlank1 = {}
@@ -623,12 +1196,13 @@ end
 
 
 %%%%%% The following section shifts the arrays of the linescan in a way
-%%%%%% that every linescan has 300px in lenght and is centered.
+%%%%%% that every linescan has 300px in lenght and is centered. 
+%%%%%% For the flanks
 for lauf = 1: length(midOut)
     if midOut(lauf) < 150
 
 
-        linescanSelectorTmp_I =  ratioFurrow1Merged{lauf}
+        linescanSelectorTmp_I =  ratioNorm{lauf}
 
        % length(linescanSelectorTmp_I);
        % midOut(lauf);
@@ -642,7 +1216,7 @@ for lauf = 1: length(midOut)
         linescanSelectorCropStoreGreen(:,lauf) = linescanSelectorCrop(1:300);
     elseif midOut(lauf) > 150
 
-         linescanSelectorTmp_I = ratioFurrow1Merged{lauf}
+         linescanSelectorTmp_I = ratioNorm{lauf}
 
 
         addZero =zeros(1,300)'
@@ -652,6 +1226,8 @@ for lauf = 1: length(midOut)
 
 
     elseif midOut(lauf) == 150
+        
+         linescanSelectorTmp_I =  ratioNorm{lauf}
 
         addZero =zeros(1,300)'
         linescanSelectorCrop = cat(1, linescanSelectorTmp_I,addZero);
@@ -660,6 +1236,51 @@ for lauf = 1: length(midOut)
 
     end
 end
+
+
+
+
+%%%%%% The following section shifts the arrays of the linescan in a way
+%%%%%% that every linescan has 300px in lenght and is centered.
+%%%%%% For the poles
+
+for lauf = 1: length(midOutPole)
+    if midOutPole(lauf) < 150
+
+
+        linescanSelectorTmp_I =  ratioPoleMerged{lauf}
+
+       % length(linescanSelectorTmp_I);
+       % midOut(lauf);
+
+        addZero = zeros(1,150 - midOutPole(lauf))';
+
+        linescanSelectorCrop = cat(1,addZero,linescanSelectorTmp_I);
+        addZero =zeros(1,300)'
+        linescanSelectorCrop = cat(1,linescanSelectorCrop,addZero);
+
+        linescanSelectorCropStoreGreenPole(:,lauf) = linescanSelectorCrop(1:300);
+    elseif midOutPole(lauf) > 150
+
+         linescanSelectorTmp_I = ratioPoleMerged{lauf}
+
+
+        addZero =zeros(1,300)'
+        linescanSelectorCrop = cat(1,linescanSelectorTmp_I,addZero);
+
+        linescanSelectorCropStoreGreenPole(:,lauf) =  linescanSelectorCrop(midOutPole(lauf)-149:300+(midOutPole(lauf)-150));
+
+
+    elseif midOutPole(lauf) == 150
+
+        addZero =zeros(1,300)'
+        linescanSelectorCrop = cat(1, linescanSelectorTmp_I,addZero);
+
+        linescanSelectorCropStoreGreenPole(:,lauf) = linescanSelectorCrop(1:300);
+
+    end
+end
+
 
 %%%%%% The following section shifts the arrays of the linescan in a way
 %%%%%% that every linescan has 300px in lenght and is centered.
@@ -677,10 +1298,10 @@ normalizedKymo = normalizedImage(linescanSelectorCropStoreGreen);
 
 imshow(normalizedKymo)
 
-imwrite(normalizedKymo,jet,[tifFilename,'Aniso_Kymo_colormapJet.tif']);
-imwrite(normalizedKymo,[tifFilename,'Aniso_Kymo.tif']);
 
-imwrite(A,map,filename)
+imwrite(normalizedKymo,[tifFilename,'Aniso_Kymo_Nrom.tif']);
+
+
 
  clear linescanSelectorTmp
     linescanSelectorTmp = zeros(300,43);
@@ -692,8 +1313,9 @@ linescanSelectorIn = redOut;
 
 %%%%% This function generates the overlay
 [greenOverlayStore]= doGenerateAnisotropieOverlay(greenNorm,  ratioNormFlank1,  ratioNormFlank2,flank1Store,flank2Store,AnalysisEnd);
+
   
-         tiffwrite_mat(greenOverlayStore,[tifFilename,'Aniso_Overlay.tif']);
+         tiffwrite_mat(greenOverlayStore,[tifFilename,'Aniso_OverlayNorm.tif']);
           
          
          
@@ -737,8 +1359,12 @@ fnplt(spline,'or',2.5); hold on
 t = 1:1:length(spline.breaks);
 cv = fnval(spline, t);
 cdv = fnval(fnder(spline), t);
-quiver(cv(1,:),cv(2,:), cdv(1,:),cdv(2,:));
+quiver(cv(1,:),cv(2,:), cdv(1,:),cdv(2,:),1);
 
+
+%Generate quiver plot with scale = 1 and save as a lossless tiff
+
+print('-dtiffn', 'quiver_cell9_frame5');
 
   for subrun= 1:length(cdv(1,:))
       
@@ -761,23 +1387,25 @@ quiver(cv(1,:),cv(2,:), cdv(1,:),cdv(2,:));
   hold on
 
   
-  %%%% Correlate tanges angle with each pixel
+  %%%% Correlate the tanges angle of the spline with each corresponding
+  %%%% pixel
   flank1Tmp = flank1Store{lauf}';
   
-  ratioNormFlank1Tmp = ratioNormFlank1{1};
+  ratioNormFlank1Tmp = ratioNormFlank1{16};
+   ratioNormFlank2Tmp = ratioNormFlank2{16}
   flankCrop1 = ratioNormFlank1Tmp(1:length(ratioNormFlank1Tmp(1,:)-5));
   flankCrop2 = ratioNormFlank1Tmp(1:length(ratioNormFlank2Tmp(1,:)-5));
   
-plot(alphaDeg1New,ratioNormFlank1Tmp(1:length(ratioNormFlank1Tmp(1,:)-5)),'x')
+%plot(alphaDeg1New,ratioNormFlank1Tmp(1:length(ratioNormFlank1Tmp(1,:)-5)),'x')
 
-plot(alphaDeg1New,ratioNormFlank2Tmp(1:length(ratioNormFlank1Tmp(1,:)-5)),'x')
+%plot(alphaDeg1New,ratioNormFlank2Tmp(1:length(ratioNormFlank1Tmp(1,:)-5)),'x')
 
 
 
 %%%%%% Generate the Fit model
 
-    I1_coords = flank1Store{1}';
-    I2_coords = flank2Store{1}';
+    I1_coords = flank1Store{16}';
+    I2_coords = flank2Store{16}';
    
     
     %%%%%%%%% Esay angle detection method by simply calcualting the angle
@@ -798,8 +1426,9 @@ plot(alphaDeg1New,ratioNormFlank2Tmp(1:length(ratioNormFlank1Tmp(1,:)-5)),'x')
                 
     end
     
+    %quiver(vNew(1,:),vNew(2,:), uNew(1,:),uNew(2,:),1);
 
-[fitresult, gof] = createFitPolyFitAngleIntensity(alphaDegModel, ratioNormFlank1Tmp)
+[fitresult, gof] = createFitPolyFitAngleIntensity(alphaDegModel, ratioNormFlank1Tmp(1:end-2))
 
 y180 = feval(fitresult,180)
 
@@ -846,60 +1475,37 @@ for lauf = 1:AnalysisEnd
 end
 
 lauf = 9
-for lauf = 1:AnalysisEnd
-    
-    flank1Tmp =  ratioNormFlank1{lauf}
-    flank2Tmp =  ratioNormFlank1{lauf}
-    
-    
-    expectedValues_F1 = expV_F1_Sammel{lauf};
-    expectedValues_F2 = expV_F2_Sammel{lauf};
-    
-    diff_F1 = f1_Diff{lauf}
-    diff_F2 = f2_Diff{lauf}
-    
-    alpha_F1 = alpha_1{lauf};
-    alpha_F2 = alpha_2{lauf};
-    
- 
- % figure(1)
- %plot(alphaTmp, flank1DiffFromExpectedSammelTmp ,'xb');hold on
- %plot(alphaTmp(1:length(flank1DiffFromExpectedSammelTmp)), expectedValuesTmp(1:length(flank1DiffFromExpectedSammelTmp)),'xr')
- 
- %figure(lauf)
- %plot(1:length(expectedValues_F1), diff_F1 ,'b');hold on
- %plot(1:length(expectedValues_F1), expectedValues_F1(1:length( expectedValues_F1)),'r');hold on
- %plot(1:length(expectedValues_F1), flank1Tmp(1:length( expectedValues_F1)),'b')
- 
- 
- figure(lauf+10)
- %plot(1:length(expectedValues_F1), diff_F1 ,'b');hold on
- plot(1:length(expectedValues_F2), expectedValues_F2(1:length( expectedValues_F2)),'r');hold on
- plot(1:length(expectedValues_F2), flank2Tmp(1:length( expectedValues_F2)),'b')
- 
- 
- pause(0.2)
- 
-end
 
 
 [expOut midOut] = doAverageFlanksAngleCorrected(redMax1,redMax2,expV_F1_Sammel,expV_F2_Sammel)
 [ratioMergeOut midOut] = doAverageFlanksAngleCorrected(redMax1,redMax2, ratioNormFlank1, ratioNormFlank2)
 
 
-mkdir('predictedAnisotropie')
-
+mkdir('predictedanisotropy')
+curdir = pwd;
 
 for lauf =1 :AnalysisEnd
     
+  
+     
+    
     expMerge = expOut{lauf}
-     ratioMerge =ratioMergeOut{lauf}
+  ratioMerge =ratioMergeOut{lauf}
      
 maxDist = round(length(expMerge)/2)
 newDistanceVec = (0 - (maxDist-1):maxDist-1) *voxelX_mum
+
+
+    lengthA = length(newDistanceVec);
+    lengthB = length(expMerge);
+    
+    lengthVec = [lengthA lengthB];
+    
+    lengthEnd = min(lengthVec)
+    
       
  %% Fit: 'untitled fit 1'.
-[xData, yData] = prepareCurveData(newDistanceVec,  expMerge(1:length(expMerge)) );
+[xData, yData] = prepareCurveData(newDistanceVec(1:lengthEnd)',  expMerge(1:lengthEnd));
 
 % Set up fittype and options.
 ft = fittype( 'poly6' );
@@ -914,8 +1520,8 @@ opts.Upper = [Inf Inf Inf Inf Inf Inf Inf];
     
  h = figure(lauf)
  %plot(1:length(expectedValues_F1), diff_F1 ,'b');hold on
- plot(newDistanceVec,  expMerge(1:length(expMerge)),'r');hold on
- plot(newDistanceVec, ratioMerge(1:length(expMerge)),'b')
+ plot(newDistanceVec,  expMerge(1:lengthEnd),'r');hold on
+ plot(newDistanceVec, ratioMerge(1:lengthEnd),'b')
  plot(fitOut)
  
  
@@ -931,7 +1537,7 @@ opts.Upper = [Inf Inf Inf Inf Inf Inf Inf];
     legend(['Expected ratio at:' num2str(timeVec(lauf)), 's'] , ['Calculated ratio at:' num2str(timeVec(lauf)), 's'])
         pause(0.2)
  
-        print(h,'-dpdf', [curdir '\' ,'predictedAnisotropie' '\' , 'frame_', num2str(lauf) ,'_GaussFit_FWHM_Anisotropie.pdf']);%tifCurvetifFilename);
+        print(h,'-dpdf', [curdir '/' ,'predictedanisotropy' '/' , 'frame_', num2str(lauf) ,'_GaussFit_FWHM_anisotropy.pdf']);%tifCurvetifFilename);
     
 end
 
@@ -961,7 +1567,7 @@ plot(alphaTmp, correctedFlank1,'x')
     
     
     
-    windowBoundaries = round(10/voxelX_mum);
+    windowBoundaries = round(8/voxelX_mum);
     
 for lauf = 1:AnalysisEnd
 
@@ -986,15 +1592,15 @@ end
     
     timeVecTmp = timeInterval:timeInterval:timeInterval*AnalysisEnd;
     
-   % timeVec = timeVecTmp - (timeInterval * anaOnset)
+   timeVec = timeVecTmp - (timeInterval * anaOnset)
    timeVec  =timeVecTmp;
 
 %%%% Use the average of the total intensity for normalization
 %%%% Has to be implemented
-for lauf = 1:length(linescanSelectorIn)
+for lauf = 20:length(linescanSelectorIn)
  
 
-    
+   % lauf = 20
     %%%% find frame relative to anaphase onset
    % time1 = timeVec(lauf);
     
@@ -1033,9 +1639,9 @@ for lauf = 1:length(linescanSelectorIn)
    
     FWHMOrigStore(lauf) = FWHMOrig;
 
- %   h=figure(1)
+  % h=figure(1)
     %%%% Plot the data
-  %  plot(((0-maxSelector(lauf))*voxelX_mum:voxelX_mum:(length(yGreenTmp)-(maxSelector(lauf)+1))* voxelX_mum),yGreenTmp,'c')
+  % plot(((0-maxSelector(lauf))*voxelX_mum:voxelX_mum:(length(yGreenTmp)-(maxSelector(lauf)+1))* voxelX_mum),yGreenTmp,'c')
     %X = [((0-maxSelector(lauf))*voxelX_mum:voxelX_mum:(length(yGreenTmp)-(maxSelector(lauf)+1))* voxelX_mum)',yGreenTmp]
     %legend([num2str(time1) ' s'])
    % hold on
@@ -1050,7 +1656,7 @@ end
 curdir = pwd;
     mkdir('redfit')
     
-    for lauf = 1:AnalysisEnd
+    for lauf = 20:AnalysisEnd
               h = figure(1) 
         plot((0-(newDistance-1):newDistance)*voxelX_mum,linescanSelector{lauf}')
        
@@ -1060,7 +1666,7 @@ curdir = pwd;
           set(gca,'FontSize',16,'FontName', 'Arial')
       plot(x_axOrig_store{lauf},y_fittedOrig_store{lauf},'r')
        axis([-15 +15 -1 1]) 
-  title('Anisotropie SiR-actin green/red Exp. 2433','FontSize', 16,'FontName', 'Arial')
+  title('Anisotropy SiR-actin green/red Exp. 2433','FontSize', 16,'FontName', 'Arial')
    %title('Gaussian fit to SiR width at the cleavage furrow. 2466, SiRActin','FontSize', 16)
     xlabel ('Distance [µm]','FontSize', 16,'FontName', 'Arial');
     ylabel('Ratio green/red  [A.U.]' ,'FontSize', 16,'FontName', 'Arial');
@@ -1070,7 +1676,7 @@ curdir = pwd;
        
       % print(h,'-dpdf', [curdir '\' 'greenFit' '\' tifFilename, 'frame_', num2str(lauf) ,'_GaussFit_5percAVG.pdf']);%tifCurvetifFilename);
    
-      print(h,'-dpdf', [curdir '\' ,'redFit' '\' , 'frame_', num2str(lauf) ,'_GaussFit_FWHM_Anisotropie.pdf']);%tifCurvetifFilename);
+      print(h,'-dpdf', [curdir '\' ,'redFit' '\' , 'frame_', num2str(lauf) ,'_GaussFit_FWHM_anisotropy.pdf']);%tifCurvetifFilename);
    close all
     end
     
@@ -1087,7 +1693,7 @@ curdir = pwd;
           set(gca,'FontSize',16,'FontName', 'Arial')
      % plot(x_axOrig_store{lauf},y_fittedOrig_store{lauf},'r')
        axis([-25 +25 0 1.5]) 
-  title('Anisotropie SiR-actin green/red Exp. 2433','FontSize', 16,'FontName', 'Arial')
+  title('anisotropy SiR-actin green/red Exp. 2433','FontSize', 16,'FontName', 'Arial')
    %title('Gaussian fit to SiR width at the cleavage furrow. 2466, SiRActin','FontSize', 16)
     xlabel ('Distance [µm]','FontSize', 16,'FontName', 'Arial');
     ylabel('Ratio green/red  [A.U.]' ,'FontSize', 16,'FontName', 'Arial');
@@ -1097,7 +1703,7 @@ curdir = pwd;
        
       % print(h,'-dpdf', [curdir '\' 'greenFit' '\' tifFilename, 'frame_', num2str(lauf) ,'_GaussFit_5percAVG.pdf']);%tifCurvetifFilename);
    
-      print(h,'-dpdf', [curdir '\' ,'redFit' '\' , 'frame_', num2str(lauf) ,'_FullLinescanLength_Anisotropie.pdf']);%tifCurvetifFilename);
+      print(h,'-dpdf', [curdir '\' ,'redFit' '\' , 'frame_', num2str(lauf) ,'_FullLinescanLength_anisotropy.pdf']);%tifCurvetifFilename);
    close all
     end
     

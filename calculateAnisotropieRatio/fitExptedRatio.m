@@ -32,8 +32,8 @@ figure( 'Name', 'untitled fit 1' );
 h = plot( fitresult, xData, yData );
 legend( h, 'test vs. test1', 'untitled fit 1', 'Location', 'NorthEast' );
 % Label axes
-xlabel( 'test1' );
-ylabel( 'test' );
+xlabel( 'Distance [µm]' );
+ylabel( 'Normalized intensity [A.U.}' );
 grid on
 
 

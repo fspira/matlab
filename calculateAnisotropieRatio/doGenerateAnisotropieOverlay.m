@@ -17,16 +17,32 @@ function  [greenOverlayStore]= doGenerateAnisotropieOverlay(greenNorm, ratioFurr
      flank1Tmp = flank1Store{subrun};
      flank2Tmp = flank2Store{subrun};
 
+     
+     AB = [length(ratioFurrow1Tmp) length(flank1Tmp)];
+     
 
-     for lauf = 1: length(flank1Tmp)-1
+     for lauf = 1:min(AB)-1
 
          greenOverlay(flank1Tmp(lauf,2),flank1Tmp(lauf,1)) = ratioFurrow1Tmp(lauf);
+     %    greenOverlay(flank2Tmp(lauf,2),flank2Tmp(lauf,1)) = ratioFurrow2Tmp(lauf);
+         
+         %pause(0.2)
+  %      greenOverlayStore(:,:,subrun) = greenOverlay; 
+
+     end
+     
+      AB = [length(ratioFurrow2Tmp) length(flank2Tmp)];
+     
+     for lauf = 1:min(AB)-1
+
+       %  greenOverlay(flank1Tmp(lauf,2),flank1Tmp(lauf,1)) = ratioFurrow1Tmp(lauf);
          greenOverlay(flank2Tmp(lauf,2),flank2Tmp(lauf,1)) = ratioFurrow2Tmp(lauf);
          
          %pause(0.2)
         greenOverlayStore(:,:,subrun) = greenOverlay; 
 
      end
+     
     
  end
  

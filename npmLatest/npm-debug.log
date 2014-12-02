@@ -1,0 +1,44 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'node',
+1 verbose cli   '/usr/local/bin/npm',
+1 verbose cli   'install',
+1 verbose cli   'git://github.com/felixge/node-ar-drone.git' ]
+2 info using npm@1.4.28
+3 info using node@v0.10.33
+4 verbose cache add [ 'git://github.com/felixge/node-ar-drone.git', null ]
+5 verbose cache add name=undefined spec="git://github.com/felixge/node-ar-drone.git" args=["git://github.com/felixge/node-ar-drone.git",null]
+6 verbose parsed url { protocol: 'git:',
+6 verbose parsed url   slashes: true,
+6 verbose parsed url   auth: null,
+6 verbose parsed url   host: 'github.com',
+6 verbose parsed url   port: null,
+6 verbose parsed url   hostname: 'github.com',
+6 verbose parsed url   hash: null,
+6 verbose parsed url   search: null,
+6 verbose parsed url   query: null,
+6 verbose parsed url   pathname: '/felixge/node-ar-drone.git',
+6 verbose parsed url   path: '/felixge/node-ar-drone.git',
+6 verbose parsed url   href: 'git://github.com/felixge/node-ar-drone.git' }
+7 silly lockFile 0fa43af6-ub-com-felixge-node-ar-drone-git git://github.com/felixge/node-ar-drone.git
+8 verbose lock git://github.com/felixge/node-ar-drone.git /Users/spira/.npm/0fa43af6-ub-com-felixge-node-ar-drone-git.lock
+9 verbose addRemoteGit [ 'git://github.com/felixge/node-ar-drone.git', 'master' ]
+10 verbose git remote.origin.url git://github.com/felixge/node-ar-drone.git
+11 error git fetch -a origin (git://github.com/felixge/node-ar-drone.git) fatal: read error: Operation timed out
+12 silly lockFile 0fa43af6-ub-com-felixge-node-ar-drone-git git://github.com/felixge/node-ar-drone.git
+13 silly lockFile 0fa43af6-ub-com-felixge-node-ar-drone-git git://github.com/felixge/node-ar-drone.git
+14 error Error: Command failed: fatal: read error: Operation timed out
+14 error
+14 error     at ChildProcess.exithandler (child_process.js:648:15)
+14 error     at ChildProcess.emit (events.js:98:17)
+14 error     at maybeClose (child_process.js:756:16)
+14 error     at Process.ChildProcess._handle.onexit (child_process.js:823:5)
+15 error If you need help, you may report this *entire* log,
+15 error including the npm and node versions, at:
+15 error     <http://github.com/npm/npm/issues>
+16 error System Darwin 13.4.0
+17 error command "node" "/usr/local/bin/npm" "install" "git://github.com/felixge/node-ar-drone.git"
+18 error cwd /Users/spira/Desktop/programme/npmLatest
+19 error node -v v0.10.33
+20 error npm -v 1.4.28
+21 error code 128
+22 verbose exit [ 1, true ]
