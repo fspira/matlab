@@ -153,7 +153,7 @@ ingressionTime = timeVec(ingressionFrame);
  hold on
   plot(timeVec,  ratioPoleStore,'-b')
 
-axis([timeVec(1) 500 0.7 1.6])   
+axis([timeVec(1) 500 0.5 1.6])   
 
 yL = get(gca,'YLim');
 line([ingressionTime ingressionTime],yL,'Color','r');

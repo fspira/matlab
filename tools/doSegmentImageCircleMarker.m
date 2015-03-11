@@ -1,32 +1,34 @@
-function t3Store = doSegmentImage(S1)
+function t3Store = doSegmentImageCircleMarker(S1)
 test  = S1;%redStack(:,:,1);
+%test  = I_crop;
 figure(1)
 imshow(test(:,:,1),[]);
 %marker = testNorm;
-testNorm = normalizedImage(test(:,:,1));
-marker = false(size(testNorm));
+testNorm = test;
+marker = test;
+marker(:,:) = 0
 
 
-for lauf = 1:2
+
 
 fh = figure(1);
  title('Mark the Background')
-frapBkg = roipoly(testNorm(:,:,1));
+  [xx,yy] = ginput(3)
 close(fh);
                 
+for lauf = 1:3
 
-                marker(frapBkg) = 255;
+                marker(round(xx(lauf)),round(yy(lauf))) = 255;
                 
 end
 
-testNorm = normalizedImage(S1(:,:,1));
 
 
 %h = fspecial('gaussian', 5, 5) 
-redStackGauss = S1%imfilter(S1(:,:,:),h);
+redStackGauss = test%imfilter(S1(:,:,:),h);
 imshow(redStackGauss(:,:,1),[])
 
-[m n p]= size(S1);
+[m n p]= size(testNorm);
 
 for lauf = 1:p
              testNorm = normalizedImage(redStackGauss(:,:,lauf));
@@ -36,7 +38,7 @@ for lauf = 1:p
 
                 %mpReg = imregionalmin(mp);
                 t3 = false(size(testNorm));
-                t3(L2 == 0 ) = 255;
+                t3(L2 == 0 ) = 0;
                 t3Store(:,:,lauf) = t3;
                % imshow(mpReg(:,:,1),[]);
                 

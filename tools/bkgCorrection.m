@@ -1,4 +1,4 @@
-function imgCorr = bkgCorrection(img)
+function [imgCorr frapBkg]  = bkgCorrection(img)
 
 imgNorm = normalizedImage(img(:,:,1));
 
