@@ -1,0 +1,11 @@
+clc; 
+myStops = dbstatus('-completenames'); 
+save('myBreakpoints.mat','myStops'); 
+close all; 
+clear classes; 
+clear java;
+load('myBreakpoints.mat'); 
+dbstop(myStops); 
+clear myStops; 
+delete('myBreakpoints.mat'); 
+disp('Cleaned up');

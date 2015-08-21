@@ -23,7 +23,7 @@ testNorm = normalizedImage(S1(:,:,1));
 
 
 %h = fspecial('gaussian', 5, 5) 
-redStackGauss = S1%imfilter(S1(:,:,:),h);
+redStackGauss = S1;%imfilter(S1(:,:,:),h);
 imshow(redStackGauss(:,:,1),[])
 
 [m n p]= size(S1);
