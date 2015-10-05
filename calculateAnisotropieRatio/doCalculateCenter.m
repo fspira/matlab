@@ -1,5 +1,5 @@
 function [first_css second_css] = doCalculateCenter(B_FirstBoundary,B_SecondBoundary,BW2,img)
-
+%B_FirstBoundary=cc(1).PixelList
     BW_first = BW2;
     BW_first(:,:) = 0;
     

@@ -5,7 +5,7 @@
 
 curdir = pwd;
 clear newLinescan
-
+%fileIdx = 19
 lauf =1
    
     cc = regionprops(t3Store,'all');
@@ -160,7 +160,7 @@ imshow(file1Norm,[])
 
  
  
- [res1,res_tmp1]=splineDilate(file1Tmp,file1Norm,[cFurrowContour1 rFurrowContour1], [1,3], 3);
+ [res1,res_tmp1]=splineDilate(file1Tmp,file1Norm,[cFurrowContour1 rFurrowContour1], [2,4], 3);
  
 
  
@@ -178,13 +178,29 @@ pause(0.5)
 
 end
 
-
+imwrite(resNorm,cmap,'normColormap')
 
 tiffwrite_mat(resStoreNorm, 'Norm_linewidth8_slidingWindow7')
 
 
 tiffwrite_mat(resStore, 'Orig_linewidth8_slidingWindow7')
 
+[m n p] = size(imgAniso)
+imgIntensity
+
+resNorm
+
+
+[mm nn pp] = size(imgMid)
+
+imgSave(:,:,1) = imgIntensity;
+imgSave(:,:,2) = imgAniso;
+imgSave(:,:,3) = resNorm;
+imgSave(:,:,4) = imgMid(:,:,1);
 
  save([I0File,'_Linescan.mat'])
+ 
+ 
+ tiffwrite_mat(imgSave,[fileIdx,'_mergedFiles.tif'])
 
+clear all

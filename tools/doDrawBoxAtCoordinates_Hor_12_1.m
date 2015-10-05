@@ -2,8 +2,8 @@ function [BW_Box_Out BWHor_Out BWVer,imgMergeSaveVertical]=doDrawBoxAtCoordinate
     
    analysisFrame = 1;
 
-    shortAxis = round((1.2 /voxelX_mum)/2);
-    longAxis = round((1 / voxelX_mum)/2);
+    shortAxis = round((1 /voxelX_mum)/2);
+    longAxis = round((1.5 / voxelX_mum)/2);
 
     yTest =    [y-shortAxis y+shortAxis y+shortAxis y-shortAxis y-shortAxis]';
     xTest =    [x-longAxis x-longAxis x+longAxis x+longAxis x-longAxis]';

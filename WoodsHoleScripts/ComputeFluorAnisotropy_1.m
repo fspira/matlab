@@ -1,4 +1,4 @@
-function [orient, aniso, avg]=ComputeFluorAnisotropy(I0,I45,I90,I135,process,varargin)
+function [orient, aniso, avg]=ComputeFluorAnisotropy_1(I0,I45,I90,I135,process,varargin)
 % [orient,aniso, avg]=ComputeFluorAnisotropy(I0,I45,I90,I13,process,instrument matrix) computes magnitude
 % and azimuth of fluorescence anisotropy.
 

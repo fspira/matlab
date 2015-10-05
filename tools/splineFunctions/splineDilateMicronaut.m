@@ -14,7 +14,7 @@ function [res,res_tmp,lookup_image_smooth] = splineDilate(input_img, lookup_imag
     lookup_image_smooth = imfilter(lookup_image, fspecial('gaussian', smoothSize, smoothSize / 4));
     
     for i = 1:length(spline)
-       res_tmp(spline(i,2), spline(i,1)) = lookup_image_smooth(spline(i,2), spline(i,1)) ;
+       res_tmp(spline(i,2), spline(i,1)) = lookup_image_smooth(spline(i,1), spline(i,2)) ;
     end
     
     res_dil_output = imdilate(res_tmp, strel('disk',dilationSize(1) ,8));

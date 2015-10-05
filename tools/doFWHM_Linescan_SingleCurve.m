@@ -4,8 +4,8 @@ function [FWHMOrig, x_axOrig, y_fittedOrig, centeredCurve] = doFWHM_Linescan_Sin
 %centerPosition = maxSelector;
 %timeSelection =    lauf
 %inputLinescan=   meanGreen(:,24);
-%inputLinescan = yGreenTmp;
-% centerPosition = redMax1;
+%inputLinescan = invertedGauss;
+% centerPosition = newMin;
 
    
   
@@ -15,14 +15,14 @@ function [FWHMOrig, x_axOrig, y_fittedOrig, centeredCurve] = doFWHM_Linescan_Sin
      % timeSelection=30;
      centeredCurve = inputLinescan;
      
-   
+  
     % plot(centeredCurve,inputLinescan)
      
     
 % Set up fittype and options.
     zeroPos = centerPosition;
     %zeroValue = inputLinescan(zeroPos-10:zeroPos+10);
-    xValue = inputLinescan(zeroPos-10:zeroPos+10);
+    xValue = inputLinescan;
     maxX = max(xValue)
     newZero = find(inputLinescan==maxX)
     newY = centeredCurve(newZero)
@@ -36,19 +36,19 @@ function [FWHMOrig, x_axOrig, y_fittedOrig, centeredCurve] = doFWHM_Linescan_Sin
     opts.StartPoint = [maxX 0 0.5];
     opts.Upper = [Inf Inf Inf];
 
-    success = 0;
+    success = 0
 
-    try
+   try
     tmpInput = isfinite(inputLinescan);
     % [fittedmodel, goodness, output] = fit(centeredCurve',inputLinescan,'gauss1');
-      [fittedmodel, goodness, output] = fit(distanceVec(tmpInput),inputLinescan(tmpInput),ft,opts);
+      [fittedmodel, goodness, output] = fit(distanceVec',inputLinescan,ft,opts);
      
       sigma1Orig = fittedmodel.c1/sqrt(2); %%%% Gives sigma
           FWHMOrig = 2*sqrt(2*log(2))*sigma1Orig; %%% Calculates the FWHM
 
         x_axOrig = distanceVec; % axis
         y_fittedOrig = fittedmodel(x_axOrig); 
-        success = 1;
+        success = 1
 
         catch E
     end
