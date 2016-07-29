@@ -1,10 +1,10 @@
-function [imgCorr1,imgCorr2] = bkgCorrectionRedGreenOutsideInside(img1,img2)
+function [BackgroundA,BackgroundB,Background1, Background2, Background3, Background4,imgCorr1,imgCorr2] = bkgCorrectionRedGreenOutsideInside(img1,img2)
 
 %img1 = greenStack;
 
-imgNorm = normalizedImage(img1(:,:,1));
+imgNorm = normalizedImage(img2(:,:,1));
 
-[mf nf pf] = size(img1);
+[mf nf pf] = size(img2);
 
 fh = figure(1);
  title('Mark the Background')
@@ -55,6 +55,8 @@ Background4 =  mean(...
 BackgroundA = (Background1 + Background3) ./2;
 BackgroundB = (Background2 + Background4) ./2;
 
+%Bkg1(:,:) = [Background1' Background3'];
+Bkg2(:,:) = [Background2' Background4'];
 
 for lauf =1:pf
     imgCorr1(:,:,lauf) = img1(:,:,lauf) - uint16(BackgroundA(lauf));%%%% changed from uint16 to uint8

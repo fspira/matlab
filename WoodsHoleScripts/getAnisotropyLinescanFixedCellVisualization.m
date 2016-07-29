@@ -153,8 +153,8 @@ for i = 1:length(rFurrowContour1)
 end
 
 
-file1Norm = normalizedImage(file1Tmp);
-
+%file1Norm = normalizedImage(file1Tmp);
+file1Norm = file1Tmp;
 imshow(file1Norm,[])
 
 
@@ -169,7 +169,7 @@ resNorm = normalizedImage(res1);
 resStoreNorm(:,:,lauf) = resNorm;
 resStore(:,:,lauf) = res1;
  
-imshow(resNorm,[])
+imshow(res1,[])
 colormap(cmap)
 
 
@@ -178,12 +178,12 @@ pause(0.5)
 
 end
 
-imwrite(resNorm,cmap,'normColormap')
+%imwrite(resNorm,cmap,'normColormap')
 
 tiffwrite_mat(resStoreNorm, 'Norm_linewidth8_slidingWindow7')
 
 
-tiffwrite_mat(resStore, 'Orig_linewidth8_slidingWindow7')
+tiffwrite_mat(resStore, [curdir,'/','Orig_linewidth8_slidingWindow7'])
 
 [m n p] = size(imgAniso)
 imgIntensity

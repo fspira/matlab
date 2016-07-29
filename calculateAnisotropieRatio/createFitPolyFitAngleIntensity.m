@@ -29,11 +29,14 @@ opts.Upper = [Inf Inf Inf Inf Inf];
 
 % Plot fit with data.
 figure( 'Name', 'untitled fit 1' );
-h = plot( fitresult, xData, yData );
+h = scatter( fitresult, xData, yData,'.k'); hold on
+set(h, 'MarkerFaceColor', 'c')
+alpha(h,0.1);
+
 legend( h, 'Normalized intensity', 'Fit', 'Location', 'NorthEast' );
 % Label axes
-xlabel( 'Alpha [degree]' );
-ylabel( 'Normalized intensity [A.U.]' );
+xlabel( 'Alpha (degree)' );
+ylabel( 'Normalized intensity (a.u.)' );
 grid on
 
 

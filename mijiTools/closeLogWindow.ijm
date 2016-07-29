@@ -1,0 +1,2 @@
+selectWindow("Log");
+      run("Close"); 
