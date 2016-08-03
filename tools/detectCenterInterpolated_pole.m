@@ -1,4 +1,4 @@
-function [ redMax1_new ] = detectCenterInterpolated(redStackMid,flank1Tmp,rMark1,cMark1)
+function [ redMax1_new ] = detectCenterInterpolated_pole(redStackMid,flank1Tmp,rMark1,cMark1)
 redStackMid(:,:) = 0;
 redStackMid_center = redStackMid;
 rMark1 = rMark1(1)
@@ -12,12 +12,12 @@ cMark1 = cMark1(1)
     
 
     [mm nn pp] = size(redStackMid)
-   hLine = cMark1
+   hLine = rMark1
    %hLine=1
-    for subrun = 1: 35
+    for subrun = 1: 25
         
-        redStackMid_center(rMark1, hLine) = 25000;
-        redStackMid_center(rMark1+1, hLine) = 25000;
+        redStackMid_center(hLine, cMark1) = 25000;
+        redStackMid_center(hLine, cMark1+1) = 25000;
         hLine = hLine +1
 
     end
