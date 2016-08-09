@@ -1,14 +1,19 @@
-function [ ratioInterp_A ] = interpolatePixelPerpendicularToLine(inputImage, Fun_coords, lineLength, angleFunc)
+function [ ratioInterp_Store ] = interpolatePixelPerpendicularToLine(inputImage, Fun_coords, lineLength, angleFunc)
+    
+for subrun = 1:length(Fun_coords)
     
 
-        x(2) =  Fun_coords(1,1) + lineLength * cosd(angleFunc(1)-90);
-        y(2) =  Fun_coords(2,1) + lineLength * sind(angleFunc(1)-90);
+        lineLengthP = lineLength;
+        lineLengthN = 0 -  lineLength;
 
 
-           lineLength = -3;
+        x(2) =  Fun_coords(1,subrun) + lineLengthP * cosd(angleFunc(subrun)-90);
+        y(2) =  Fun_coords(2,subrun) + lineLengthP * sind(angleFunc(subrun)-90);
 
-        x(3) =  Fun_coords(1,1) + lineLength * cosd(angleFunc(1)-90);
-        y(3) =  Fun_coords(2,1) + lineLength * sind(angleFunc(1)-90);
+
+
+        x(3) =  Fun_coords(1,subrun) + lineLengthN * cosd(angleFunc(subrun)-90);
+        y(3) =  Fun_coords(2,subrun) + lineLengthN * sind(angleFunc(subrun)-90);
 
 
         
@@ -16,20 +21,34 @@ function [ ratioInterp_A ] = interpolatePixelPerpendicularToLine(inputImage, Fun
         %%%% Interpolated line length
         %%%%
        
-        InterpolatedPixel_I = sqrt((Fun_coords(1,1) - x(2))^2+ (Fun_coords(2,1) - y(2))^2);
-        InterpolatedPixel_II = sqrt((Fun_coords(1,1) - x(3))^2+ (Fun_coords(2,1) - y(3))^2);
+        InterpolatedPixel_I = sqrt((Fun_coords(1,subrun) - x(2))^2+ (Fun_coords(2,subrun) - y(2))^2);
+        InterpolatedPixel_II = sqrt((Fun_coords(1,subrun) - x(3))^2+ (Fun_coords(2,subrun) - y(3))^2);
         
         
         %%%%
         %%%% interpolates the intensities along the line
         %%%%
-      Vq_I = interp2(inputImage(:,:,1),linspace(Fun_coords(2,1),y(3),InterpolatedPixel_I),linspace(Fun_coords(1,1),x(3),InterpolatedPixel_I));
-      Vq_II = interp2(inputImage(:,:,1),linspace(Fun_coords(2,1),y(2),InterpolatedPixel_II),linspace(Fun_coords(1,1),x(2),InterpolatedPixel_I));
+      Vq_I = interp2(inputImage(:,:,1),linspace(Fun_coords(1,subrun),x(3),InterpolatedPixel_I),linspace(Fun_coords(2,subrun),y(3),InterpolatedPixel_I));
+      Vq_II = interp2(inputImage(:,:,1),linspace(Fun_coords(1,subrun),x(2),InterpolatedPixel_II),linspace(Fun_coords(2,subrun),y(2),InterpolatedPixel_II));
        
       
       ratioInterp_A(1) = (mean(Vq_I) + mean(Vq_II))/2;
+      
+      ratioInterp_Store(subrun) = ratioInterp_A;
+     
+
+% 
+% imshow(inputImage,[])
+% hold on
+% plot(linspace(Fun_coords(1,subrun),x(3),InterpolatedPixel_I),linspace(Fun_coords(2,subrun),y(3),InterpolatedPixel_I),'r')
+%  plot(   linspace(Fun_coords(1,subrun),x(2),InterpolatedPixel_II),linspace(Fun_coords(2,subrun),y(2),InterpolatedPixel_II),'g')
+%       
+      
+      
+
+subrun
        
-        
+end    
 
 end
 
